@@ -1,0 +1,33 @@
+# Conversion to YAML from Properties formar report
+# Warnings:
+# - The yaml file had comments which are lost in the refactoring!
+spring:
+  application:
+    name: waveplus
+
+  profiles:
+    active: '@spring.profiles.active@'
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/testing_spring
+    username: postgres
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  boot:
+    admin:
+      client:
+        url: http://localhost:9090/
+server:
+  port: 8082
+app:
+  jwt:
+    secret: ======================MySecretKey=TestKey123======================================================
+    expiration: 3600
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'

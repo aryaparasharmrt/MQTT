@@ -1,8 +1,11 @@
 package com.dwellsmart.service.impl;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -11,12 +14,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.dwellsmart.dto.DeviceDTO;
 import com.dwellsmart.dto.request.AuthRequest;
 import com.dwellsmart.dto.response.AuthResponse;
+import com.dwellsmart.entity.User;
 import com.dwellsmart.exception.ApplicationException;
 import com.dwellsmart.security.JwtUtil;
 import com.dwellsmart.service.IAuthenticationService;
+import com.dwellsmart.service.IDeviceService;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -26,6 +34,8 @@ public class AuthenticationService implements IAuthenticationService {
 //	private final PasswordEncoder passwordEncoder;
 	private final JwtUtil jwtUtil;
 	private final AuthenticationManager authenticationManager;
+
+	private final IDeviceService deviceService;
 
 //	public AuthenticationResponse register(RegisterRequest request) {
 //		var user = User.builder().firstname(request.getFirstname()).lastname(request.getLastname())
@@ -45,8 +55,6 @@ public class AuthenticationService implements IAuthenticationService {
 			// Authenticate the user
 			Authentication authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-			
-			System.out.println("what is authentication: "+authentication);
 
 			// Set the authentication in the security context
 			SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -56,8 +64,6 @@ public class AuthenticationService implements IAuthenticationService {
 			
 			List<GrantedAuthority> filteredAuthorities = authentication.getAuthorities().stream()
 			        .collect(Collectors.toList());
-			
-			System.out.println(filteredAuthorities);
 
 			    // Create a new Authentication token with only the active role
 //			    Authentication newAuth = new UsernamePasswordAuthenticationToken(
@@ -68,17 +74,32 @@ public class AuthenticationService implements IAuthenticationService {
 
 			// Generate JWT token using user details
 			final var jwtToken = jwtUtil.generateToken(userDetails);
+			String secureRefreshToken = jwtUtil.generateSecureRefreshToken();
+
+			DeviceDTO deviceDTO = DeviceDTO.builder().deviceId(loginRequest.getDeviceId())
+					.deviceType(loginRequest.getDeviceType())
+					.revoked(false)
+					.expired(false)
+					.tokenCreatedAt(LocalDateTime.now())
+//		                .OS(loginRequest.getOs())
+//		                .version(loginRequest.getVersion())
+					.refreshToken(secureRefreshToken).username(loginRequest.getUsername()).build();
+
+			deviceService.manageDevice(deviceDTO);
 
 //		var refreshToken = jwtUtil.generateRefreshToken(user);
 //		revokeAllUserTokens(user);
 //		saveUserToken(user, jwtToken);
-			return AuthResponse.builder().accessToken(jwtToken).refreshToken(null).build();
+			return AuthResponse.builder().accessToken(jwtToken).refreshToken(secureRefreshToken)
+					.deviceId(loginRequest.getDeviceId()).build();
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new ApplicationException("Authentication failed", e);  //custom application exception
 		}
 
 	}
+
 
 //	private void saveUserToken(User user, String jwtToken) {
 //		var token = Token.builder().user(user).token(jwtToken).tokenType(TokenType.BEARER).expired(false).revoked(false)

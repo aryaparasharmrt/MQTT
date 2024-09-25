@@ -8,6 +8,8 @@ import java.util.Set;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -48,25 +50,25 @@ public class User {
 	private String email;
 	
 	@CreationTimestamp
-	@Column(name = "created_at", updatable = false)
+	@Column(updatable = false)
 	private LocalDateTime createdAt;
 
 	@UpdateTimestamp
-	@Column(name = "updated_at")
 	private LocalDateTime updatedAt;
 
 //	@ElementCollection(targetClass = Role.class) // Defines a collection of Role enums that will be stored in a separate table
 	
 	@Enumerated(EnumType.STRING) // Specifies that the enum values should be stored as strings in the database
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  // orphanRemoval = true -> think later
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)  // orphanRemoval = true -> think later
 	@Builder.Default
 	private Set<Role> roles = new HashSet<>(); // Default initialization
 	
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonManagedReference
 	private Set<Device> devices;
 	
     // One-to-One relationship with Resident
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user",fetch = FetchType.LAZY)
     private Resident resident;
 
 	public void addRole(Role role) {

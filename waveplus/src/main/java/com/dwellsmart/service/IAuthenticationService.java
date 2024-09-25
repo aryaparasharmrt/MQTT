@@ -7,5 +7,7 @@ public interface IAuthenticationService {
 	
 	AuthResponse authenticate(AuthRequest loginRequest);
 	
+//	void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException;
+	
 
 }

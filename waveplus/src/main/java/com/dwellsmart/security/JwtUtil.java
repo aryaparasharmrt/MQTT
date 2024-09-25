@@ -1,5 +1,7 @@
 package com.dwellsmart.security;
 
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -30,6 +32,13 @@ public class JwtUtil {
 
 	@Value("${app.jwt.expiration}")
 	private long expiration;
+	
+	public String generateSecureRefreshToken() {
+	    SecureRandom secureRandom = new SecureRandom(); // Secure random number generator
+	    byte[] token = new byte[24]; // 24 bytes = 192 bits
+	    secureRandom.nextBytes(token); 
+	    return Base64.getUrlEncoder().withoutPadding().encodeToString(token); // URL safe Base64 encoded string
+	}
 
 	public String generateToken(UserDetails userDetails) {
 

@@ -8,12 +8,13 @@ import lombok.Data;
 @Data
 public class AuthRequest {
 
-	@NotBlank
+	@NotBlank(message = "Username is mandatory")
 	private String username;
-	@NotBlank
+	
+	@NotBlank(message = "Password is mandatory")
 	private String password;
 	
-	@NotBlank
+	@NotBlank(message = "Device Type is mandatory")
 	@JsonProperty("device_type")
 	private String deviceType;
 

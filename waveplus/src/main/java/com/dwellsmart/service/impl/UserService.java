@@ -1,6 +1,7 @@
 package com.dwellsmart.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,28 +13,26 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.dwellsmart.entity.User;
+import com.dwellsmart.exception.ResourceNotFoundException;
 import com.dwellsmart.repository.RoleRepository;
 import com.dwellsmart.repository.UserRepository;
 import com.dwellsmart.service.IUserService;
 
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 
 @Service
+@RequiredArgsConstructor
 public class UserService implements IUserService, UserDetailsService {
 
-	private UserRepository repository;
+	private final UserRepository repository;
 	
 	@Autowired
 	private RoleRepository roleRepository;
 	
-
 	
-	public UserService(UserRepository repository) {
-		this.repository = repository;
-	}
-	
-
 //	@Override
 //	public List<User> findAll() {
 //		return repository.findAll();
@@ -48,21 +47,16 @@ public class UserService implements IUserService, UserDetailsService {
 
 	@Override
 	public User findByUserName(String username) {
-		User user = repository.findByUsername(username);
-
-		if (user == null)
-			throw new UsernameNotFoundException(username);
-		else
-			return user;
+		
+		return  repository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 	}
 
 	@Override
 	public UserDetails loadUserByUsername(String username) {
-		User user = repository.findByUsername(username);
-
-		if (user == null) {
-			throw new UsernameNotFoundException(username);
-		}
+		
+		User user = repository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
 		// Convert all user roles to GrantedAuthority
 	    List<GrantedAuthority> authorities = user.getRoles().stream()

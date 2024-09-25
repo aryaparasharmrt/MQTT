@@ -1,6 +1,5 @@
 package com.dwellsmart.security.configuration;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -9,8 +8,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import static com.dwellsmart.constants.Endpoints.*;
 import com.dwellsmart.security.JwtAuthenticationFilter;
-import com.dwellsmart.security.JwtUtil;
 import com.dwellsmart.security.UnAuthorizedHandler;
 
 import lombok.RequiredArgsConstructor;
@@ -49,7 +48,7 @@ public class SecurityConfig {
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth ->
 
-				auth.requestMatchers("/user/authenticate", "/bam/create", "/actuator/**").permitAll()
+				auth.requestMatchers("/user/authenticate", "/bam/create", "/actuator/**",BASE+"/**",MANAGER).permitAll()
 						.requestMatchers("/api/test/**").permitAll().anyRequest().authenticated());
 		
 		http.addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);

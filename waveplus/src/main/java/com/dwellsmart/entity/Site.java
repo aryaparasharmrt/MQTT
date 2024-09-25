@@ -25,38 +25,31 @@ public class Site {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
-    @Column(name = "site_id")
     private Integer siteId;
     
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 250)
-    @Column(name = "site_name")
     private String siteName;
     
 //    @Basic(optional = false)
 //    @NotNull
-    @Column(name = "grid_rate")
     private Double gridRate;
     
 //    @Basic(optional = false)
 //    @NotNull
-    @Column(name = "dg_rate")
     private Double dgRate;
     
 //    @Basic(optional = false)
 //    @NotNull
-    @Column(name = "grid_duty_surchagre")
     private Double gridDutySurchagre;
     
 //    @Basic(optional = false)
 //    @NotNull
-    @Column(name = "maintainence_rate")
     private Double maintainenceRate;
     
 //    @Basic(optional = false)
 //    @NotNull
-    @Column(name = "dg_fixed_mmc")
     private Double dgFixedMmc;
     
 //    @Basic(optional = false)
@@ -66,32 +59,26 @@ public class Site {
     
 //    @Basic(optional = false)
 //    @NotNull
-    @Column(name = "fixed_month_meter_grid")
     private Double fixedMonthMeterGrid;
     
 //    @Basic(optional = false)
 //    @NotNull
-    @Column(name = "interest_rate")
     private Double interestRate;
     
 //    @Basic(optional = false)
 //    @NotNull
-    @Column(name = "dg_consumption_check_limit")
     private Integer dgConsumptionCheckLimit;
     
 //    @Basic(optional = false)
 //    @NotNull
-    @Column(name = "grid_consumption_check_limit")
     private int gridConsumptionCheckLimit;
     
 //    @Basic(optional = false)
 //    @NotNull
-    @Column(name = "freedgunits")
     private Double freedgunits;
     
 //    @Basic(optional = false)
 //    @NotNull
-    @Column(name = "fixed_maintainence_charge")
     private Double fixedMaintainenceCharge;
     
 
@@ -103,12 +90,8 @@ public class Site {
     
 //    @Basic(optional = false)
 //    @NotNull
-    @Column(name = "fixed_charge_per_kva")
     private Double fixedChargePerKva;
     
- 
-    
-    @Column(name = "vending_charge")
     private Double vendingCharge;
     
 //    @Column(name = "fixed_month_charges_cgst")

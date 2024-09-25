@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +16,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.stereotype.Component;
+
+import static com.dwellsmart.constants.Endpoints.*;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -83,8 +86,13 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
 	}
 
 	@Override
-	protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
-			throws IOException, ServletException {
+	protected void doFilterInternal(@NonNull HttpServletRequest req, @NonNull HttpServletResponse res,
+			@NonNull FilterChain chain) throws ServletException, IOException {
+		
+		if (req.getServletPath().contains(BASE+MANAGER)) {
+			chain.doFilter(req, res);
+			return;
+		}
 		String header = req.getHeader(HttpHeaders.AUTHORIZATION);
 
 		if (header == null || !header.startsWith(TOKEN_PREFIX)) {

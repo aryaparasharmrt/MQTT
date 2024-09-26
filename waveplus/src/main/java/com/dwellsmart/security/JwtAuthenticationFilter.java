@@ -3,6 +3,7 @@ package com.dwellsmart.security;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -17,6 +18,10 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.stereotype.Component;
 
+import com.dwellsmart.dto.DeviceDTO;
+import com.dwellsmart.service.IDeviceService;
+
+import static com.dwellsmart.constants.Constants.TOKEN_PREFIX;
 import static com.dwellsmart.constants.Endpoints.*;
 
 import jakarta.servlet.FilterChain;
@@ -26,12 +31,10 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
-	
-	public static final String TOKEN_PREFIX = "Bearer ";
-	
+
 	// Define the list of endpoints to exclude from JWT processing
-    private static final List<String> EXCLUDED_PATHS = List.of("/authenticate", "/register");
-    // Get the request URI
+//    private static final List<String> EXCLUDED_PATHS = List.of("/authenticate", "/register");
+	// Get the request URI
 //    String requestPath = request.getRequestURI();
 //
 //    // If the request path is in the excluded list, skip JWT validation
@@ -80,7 +83,10 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
 
 	@Autowired
 	private UserDetailsService userDetailsService;
-	
+
+	@Autowired
+	private IDeviceService deviceService;
+
 	public JwtAuthenticationFilter(AuthenticationManager authManager) {
 		super(authManager);
 	}
@@ -88,8 +94,8 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
 	@Override
 	protected void doFilterInternal(@NonNull HttpServletRequest req, @NonNull HttpServletResponse res,
 			@NonNull FilterChain chain) throws ServletException, IOException {
-		
-		if (req.getServletPath().contains(BASE+MANAGER)) {
+
+		if (req.getServletPath().contains(PUBLIC)) {
 			chain.doFilter(req, res);
 			return;
 		}

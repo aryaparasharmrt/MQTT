@@ -12,7 +12,7 @@ public interface IDeviceService {
 	void manageDevice(DeviceDTO deviceDTO);
 	
 	// Create a new device
-	DeviceDTO loggedInDevice(DeviceDTO device);
+//	DeviceDTO loggedInDevice(DeviceDTO device);
 
     // Get a device by its deviceId (unique)
     Optional<DeviceDTO> getDeviceByDeviceId(String deviceId);
@@ -21,7 +21,7 @@ public interface IDeviceService {
     List<Device> getDevicesByUser(User user);
 
     // Update device information (by deviceId)
-    Device updateDevice(String deviceId, Device updatedDevice);
+//    Device updateDevice(String deviceId, Device updatedDevice);
 
     // Mark device as revoked or expired
     void revokeDevice(String deviceId);
@@ -31,7 +31,11 @@ public interface IDeviceService {
     // Delete a device (by deviceId)
     void deleteDevice(String deviceId);
 
-	void updateDevice(DeviceDTO existingDevice);
+//	void updateDevice(DeviceDTO existingDevice);
+
+//	boolean isTokenRequestValid(String refreshToken, String deviceId);
+
+	Optional<DeviceDTO> getDeviceByDeviceIdAndRefToken(String deviceId, String refreshToken);
 
 
 }

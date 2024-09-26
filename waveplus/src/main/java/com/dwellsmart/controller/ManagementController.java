@@ -1,8 +1,6 @@
 package com.dwellsmart.controller;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +21,8 @@ import com.dwellsmart.entity.Role;
 import com.dwellsmart.entity.User;
 import com.dwellsmart.service.IUserService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping(Endpoints.MANAGER)
 public class ManagementController {
@@ -39,7 +39,7 @@ public class ManagementController {
 	}
 
 	@PostMapping("/create")
-	public ResponseEntity<String> createManager(@RequestBody CreateUserRequest createManagerRequest) {
+	public ResponseEntity<String> createManager(@Valid @RequestBody CreateUserRequest createManagerRequest) {
 
 		User user = User.builder().username(createManagerRequest.getUsername())
 				.password(encoder.encode(createManagerRequest.getPassword())).build();

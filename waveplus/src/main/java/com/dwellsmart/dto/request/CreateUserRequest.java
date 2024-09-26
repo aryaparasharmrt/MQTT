@@ -13,12 +13,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreateUserRequest{
 
-	@NotBlank(message = "Email is mandatory")
-	@Email(message = "Email should be valid")
+	@NotBlank(message = "Username is mandatory")
+//	@Email(message = "Email should be valid")
 	private String username;
 
 	@NotBlank(message = "Password is mandatory")
-	@Size(min = 6, message = "Password should be at least 6 characters long")
+//	@Size(min = 6, message = "Password should be at least 6 characters long")
 	private String password;
 
 }

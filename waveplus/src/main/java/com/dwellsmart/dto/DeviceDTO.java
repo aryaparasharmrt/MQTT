@@ -19,9 +19,9 @@ public class DeviceDTO {
 
 	private String deviceType; // Optional unless it's mobile
 
-//	private String OS; // Mandatory for mobile
-//
-//	private String version; // Mandatory for mobile
+	private String OS; // Mandatory for mobile
+
+	private String version; // Mandatory for mobile
 
 	private String username;
 
@@ -29,8 +29,8 @@ public class DeviceDTO {
 
 	private LocalDateTime tokenCreatedAt;
 	
-	private boolean expired;
-
+	private LocalDateTime loginDate;
+	
 	private String refreshToken;
 
 }

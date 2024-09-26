@@ -1,7 +1,6 @@
 package com.dwellsmart.controller;
 
 
-import java.io.IOException;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -10,13 +9,11 @@ import static com.dwellsmart.constants.Endpoints.*;
 
 import com.dwellsmart.constants.Constants;
 import com.dwellsmart.dto.request.AuthRequest;
+import com.dwellsmart.dto.request.RefreshTokenOrLogoutRequest;
 import com.dwellsmart.dto.response.AuthResponse;
 import com.dwellsmart.exception.ApplicationException;
-import com.dwellsmart.repository.DeviceRepository;
 import com.dwellsmart.service.IAuthenticationService;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -39,7 +36,7 @@ public class AuthenticationController {
 		else throw new ApplicationException("Bad Request : Device Type only 'WEB/AND/IOS' Allowed");
 	}
 
-	@PostMapping(AUTHENTICATE)
+	@PostMapping(PUBLIC + AUTHENTICATE)
 	public ResponseEntity<AuthResponse> authenticate(@Valid @RequestBody AuthRequest loginRequest) {
 
 		if (Constants.CLIENT_AND.equalsIgnoreCase(loginRequest.getDeviceType())
@@ -52,18 +49,25 @@ public class AuthenticationController {
 
 		return ResponseEntity.ok(authenticationService.authenticate(loginRequest));
 	}
-	
+
+	@PostMapping(PUBLIC + REFRESH_TOKEN)
+	public ResponseEntity<AuthResponse> refreshAccessToken(@Valid @RequestBody RefreshTokenOrLogoutRequest tokenRequest) {
+		return ResponseEntity.ok(authenticationService.refreshToken(tokenRequest));
+	}
 
 //	@PostMapping("/register")
 //	public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request) {
 //		return ResponseEntity.ok(service.register(request));
 //	}
-//
-//	
-//
-//	@PostMapping("/refresh-token")
-//	public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-//		service.refreshToken(request, response);
-//	}
+
+	@PostMapping(PUBLIC + LOGOUT)
+	public ResponseEntity<String> logout(@Valid @RequestBody RefreshTokenOrLogoutRequest logoutRequest) {
+		
+		return  ResponseEntity.ok(authenticationService.logout(logoutRequest));
+
+	}
+
+	
+	
 
 }

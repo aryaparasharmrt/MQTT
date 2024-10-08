@@ -2,7 +2,6 @@ package com.dwellsmart.security;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,33 +115,56 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
 	private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
 		
 		String token = request.getHeader(HttpHeaders.AUTHORIZATION);
-		if (token != null) {
-			// check some logic in more detail
-			String jwtToken = token.replace(TOKEN_PREFIX, "");
-			String user = jwtUtil.extractUsername(jwtToken);
+		String jwtToken = token.replace(TOKEN_PREFIX, ""); // because already check token prefix
+//		String deviceId = request.getHeader("device_id"); // Get the device ID from the request header
 
-			if (user != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-				UserDetails userDetails = null;
-				try {
-					userDetails = userDetailsService.loadUserByUsername(user);
-				} catch (UsernameNotFoundException e) {
-					// Handle exception if user is not found
-				}
-				
-				if (userDetails != null && jwtUtil.validateToken(jwtToken, userDetails)) {
-					UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-							userDetails, null, userDetails.getAuthorities());
-					usernamePasswordAuthenticationToken
-							.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-					SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-				}
-			}
+		// JWT Validation and Client ID Check
+//		if (jwtToken != null && deviceId != null) {
+			if (jwtToken != null) {
 
-			if (user != null) {
-				return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
+			// Find device by client ID
+//			Optional<DeviceDTO> deviceOpt = deviceService.getDeviceByDeviceId(deviceId);
+//
+//			if (deviceOpt.isPresent()) {
+//				DeviceDTO device = deviceOpt.get();
+
+				// Check if the device has been revoked (logout)
+//				if (device.isRevoked()) {
+//					// Token is invalid if the device is revoked
+//					return null; // Stop further processing
+//				}
+
+				// check some logic in more detail
+				String user = jwtUtil.extractUsername(jwtToken);
+
+				if (user != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+					UserDetails userDetails = null;
+					try {
+						userDetails = userDetailsService.loadUserByUsername(user);
+					} catch (UsernameNotFoundException e) {
+						// Handle exception if user is not found
+					}
+
+					if (userDetails != null && jwtUtil.validateToken(jwtToken, userDetails)) {
+						UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+								userDetails, null, userDetails.getAuthorities());
+						System.out.println(userDetails.getAuthorities());
+						usernamePasswordAuthenticationToken
+								.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+						return usernamePasswordAuthenticationToken;
+//						SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+						
+					}
+				}
+
+//				if (user != null) {
+//					return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
+//				}
+				return null;
+			} else {
+				return null; // Stop further processing
 			}
-			return null;
-		}
-		return null;
+//		}
+//		return null;
 	}
 }

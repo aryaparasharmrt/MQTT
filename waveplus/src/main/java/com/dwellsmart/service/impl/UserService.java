@@ -60,8 +60,10 @@ public class UserService implements IUserService, UserDetailsService {
 
 		// Convert all user roles to GrantedAuthority
 	    List<GrantedAuthority> authorities = user.getRoles().stream()
-	            .map(role -> new SimpleGrantedAuthority(role.getRole().name())) // Example roles: "ROLE_ADMIN", "ROLE_USER"
+	            .map(role -> new SimpleGrantedAuthority(role.getRole().name())) 
 	            .collect(Collectors.toList());
+	    
+//	    authorities.forEach(auth -> System.out.println("Authority: " + auth.getAuthority())); // Log authority
 
 	    return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), authorities);
 

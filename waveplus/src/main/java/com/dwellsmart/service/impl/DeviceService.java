@@ -80,6 +80,10 @@ public class DeviceService implements IDeviceService {
 					device.setRefreshToken(deviceDTO.getRefreshToken());
 					device.setTokenCreatedAt(deviceDTO.getTokenCreatedAt());
 					device.setLoginDate(deviceDTO.getLoginDate());
+					device.setRevoked(deviceDTO.isRevoked());
+					device.setUser(user);
+					
+					
 
 					// Save the updated device
 					deviceRepository.save(device);

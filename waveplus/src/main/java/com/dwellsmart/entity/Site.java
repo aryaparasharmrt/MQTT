@@ -1,6 +1,9 @@
 package com.dwellsmart.entity;
 
+import java.util.List;
+
 import jakarta.persistence.Basic;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -9,190 +12,222 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.Data;
-
+import jakarta.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Table(name = "sites")
-@Data
+@Table(name = "sites", uniqueConstraints = {@UniqueConstraint(columnNames = {"site_name", "project_id"})})
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Site {
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(nullable = false)
+	private Integer siteId;
 
+	@Basic(optional = false)
+	@Column(nullable = false, length = 250)
+	private String siteName;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
-    private Integer siteId;
-    
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 250)
-    private String siteName;
-    
-//    @Basic(optional = false)
-//    @NotNull
-    private Double gridRate;
-    
-//    @Basic(optional = false)
-//    @NotNull
-    private Double dgRate;
-    
-//    @Basic(optional = false)
-//    @NotNull
-    private Double gridDutySurchagre;
-    
-//    @Basic(optional = false)
-//    @NotNull
-    private Double maintainenceRate;
-    
-//    @Basic(optional = false)
-//    @NotNull
-    private Double dgFixedMmc;
-    
-//    @Basic(optional = false)
-//    @NotNull
-//    @Column(name = "t_and_d_losses")
-//    private double tAndDLosses;
-    
-//    @Basic(optional = false)
-//    @NotNull
-    private Double fixedMonthMeterGrid;
-    
-//    @Basic(optional = false)
-//    @NotNull
-    private Double interestRate;
-    
-//    @Basic(optional = false)
-//    @NotNull
-    private Integer dgConsumptionCheckLimit;
-    
-//    @Basic(optional = false)
-//    @NotNull
-    private int gridConsumptionCheckLimit;
-    
-//    @Basic(optional = false)
-//    @NotNull
-    private Double freedgunits;
-    
-//    @Basic(optional = false)
-//    @NotNull
-    private Double fixedMaintainenceCharge;
-    
+	@Basic(optional = false)
+	@Column(nullable = false)
+	private Double gridRate;
 
-    
- // Many-to-one relationship with Project
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
-    
-//    @Basic(optional = false)
-//    @NotNull
-    private Double fixedChargePerKva;
-    
-    private Double vendingCharge;
-    
-//    @Column(name = "fixed_month_charges_cgst")
-//    private Double fixedMonthChargesCgst;
-//    
-//    @Column(name = "fixed_month_charges_sgst")
-//    private Double fixedMonthChargesSgst;
-//    
-//    @Column(name = "fixed_month_charges_igst")
-//    private Double fixedMonthChargesIgst;
-//    
-//    @Column(name = "unit_charges_grid_cgst")
-//    private Double unitChargesGridCgst;
-//    
-//    @Column(name = "unit_charges_grid_sgst")
-//    private Double unitChargesGridSgst;
-//    
-//    @Column(name = "unit_charges_grid_igst")
-//    private Double unitChargesGridIgst;
-//    
-//    @Column(name = "electricity_surcharge_cgst")
-//    private Double electricitySurchargeCgst;
-//    
-//    @Column(name = "electricity_surcharge_sgst")
-//    private Double electricitySurchargeSgst;
-//    
-//    @Column(name = "electricity_surcharge_igst")
-//    private Double electricitySurchargeIgst;
-//    
-//    @Column(name = "dg_fixed_mmc_cgst")
-//    private Double dgFixedMmcCgst;
-//    
-//    @Column(name = "dg_fixed_mmc_sgst")
-//    private Double dgFixedMmcSgst;
-//    
-//    @Column(name = "dg_fixed_mmc_igst")
-//    private Double dgFixedMmcIgst;
-//    
-//    @Column(name = "unit_charges_dg_cgst")
-//    private Double unitChargesDgCgst;
-//    
-//    @Column(name = "unit_charges_dg_sgst")
-//    private Double unitChargesDgSgst;
-//    
-//    @Column(name = "unit_charges_dg_igst")
-//    private Double unitChargesDgIgst;
-//    
-//    @Column(name = "td_loss_cgst")
-//    private Double tdLossCgst;
-//    
-//    @Column(name = "td_loss_sgst")
-//    private Double tdLossSgst;
-//    
-//    @Column(name = "td_loss_igst")
-//    private Double tdLossIgst;
-//    
-//    @Column(name = "water_cgst")
-//    private Double waterCgst;
-//    
-//    @Column(name = "water_sgst")
-//    private Double waterSgst;
-//    
-//    @Column(name = "water_igst")
-//    private Double waterIgst;
-//    
-//    @Column(name = "vending_cgst")
-//    private Double vendingCgst;
-//    
-//    @Column(name = "vending_sgst")
-//    private Double vendingSgst;
-//    
-//    @Column(name = "vending_igst")
-//    private Double vendingIgst;
-//    
-//    @Column(name = "commom_area_maintainence_charges_cgst")
-//    private Double commomAreaMaintainenceChargesCgst;
-//    
-//    @Column(name = "commom_area_maintainence_charges_sgst")
-//    private Double commomAreaMaintainenceChargesSgst;
-//    
-//    @Column(name = "commom_area_maintainence_charges_igst")
-//    private Double commomAreaMaintainenceChargesIgst;
-//    
-//    @Column(name = "slab2_rate")
-//    private Double slab2Rate;
-//    
-//    @Column(name = "slab3_rate")
-//    private Double slab3Rate;
-//    
-//    @Column(name = "slab4_rate")
-//    private Double slab4Rate;
-//    
-//    @Column(name = "slab1_limit")
-//    private Double slab1Limit;
-//    
-//    @Column(name = "slab2_limit")
-//    private Double slab2Limit;
-//    
-//    @Column(name = "slab3_limit")
-//    private Double slab3Limit;
+	@Basic(optional = false)
+	@Column(nullable = false)
+	private Double dgRate;
 
+	@Column(nullable = false)
+	@Builder.Default
+	private Double gridDutySurchagre = 0.0;
 
+	@Column(nullable = false)
+	@Builder.Default
+	private Double maintainenceRate = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Integer minRechargeAmt = 0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double dgFixedMmc = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double tAndDLosses = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double fixedMonthMeterGrid = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double interestRate = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Integer dgConsumptionCheckLimit = 0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Integer gridConsumptionCheckLimit = 0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Integer freedgunits = 0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Integer fixedMaintainenceCharge = 0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double fixedChargePerKva = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double vendingCharge = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double waterCharge = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double fixedMonthChargesCgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double fixedMonthChargesSgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double fixedMonthChargesIgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double unitChargesGridCgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double unitChargesGridSgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double unitChargesGridIgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double electricitySurchargeCgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double electricitySurchargeSgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double electricitySurchargeIgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double dgFixedMmcCgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double dgFixedMmcSgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double dgFixedMmcIgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double unitChargesDgCgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double unitChargesDgSgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double unitChargesDgIgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double tdLossCgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double tdLossSgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double tdLossIgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double waterCgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double waterSgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double waterIgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double vendingCgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double vendingSgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double vendingIgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double commomAreaMaintainenceChargesCgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double commomAreaMaintainenceChargesSgst = 0.0;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Double commomAreaMaintainenceChargesIgst = 0.0;
+
+	private Double slab2Rate;
+
+	private Double slab3Rate;
+
+	private Double slab4Rate;
+
+	private Double slab1Limit;
+
+	private Double slab2Limit;
+
+	private Double slab3Limit;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@Basic(optional = false)
+	@JoinColumn(name = "project_id", nullable = false)
+	private Project project;
+
+	@OneToMany(mappedBy = "site", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<Resident> residents;
 }
-

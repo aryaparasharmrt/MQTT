@@ -1,11 +1,14 @@
 package com.dwellsmart.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 import com.dwellsmart.constants.RoleType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.Basic;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -23,38 +26,42 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@Entity
+@Table(name = "user_roles")
 @Getter
 @Setter
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "user_roles")
+@AllArgsConstructor
 public class Role {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(nullable = false)
 	private Long roleId;
-
-	// Many-to-One relationship with User
-	@ManyToOne(fetch = FetchType.LAZY) // Many roles can be assigned to one user
-	@JoinColumn(name = "user_id", nullable = false)
-	@JsonIgnore // Prevent infinite recursion during serialization
-	private User user;
-
-	@Enumerated(EnumType.STRING) // Enum will be saved as a string in DB
-	@Column(name = "role", nullable = false)
-	private RoleType role;
-
+	
+	@Basic(optional = false)
 	@Column(nullable = false)
 	private LocalDateTime assignedAt;
 
-	@ManyToOne
+
+	@Enumerated(EnumType.STRING) // Enum will be saved as a string in DB
+	@Basic(optional = false)
+	@Column(nullable = false)
+	private RoleType role;
+
+	// Many-to-One relationship with User
+	@ManyToOne(fetch = FetchType.LAZY) // Many roles can be assigned to one user
+	@Basic(optional = false)
+	@JoinColumn(name = "user_id", nullable = false)
+//	@JsonIgnore // Prevent infinite recursion during serialization
+	private User user;
+	
+	@ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
 	@JoinColumn(name = "project_id", nullable = true)
 	private Project project; // Nullable for BAM or global roles
 	
 	
-	 // Override equals and hashCode
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

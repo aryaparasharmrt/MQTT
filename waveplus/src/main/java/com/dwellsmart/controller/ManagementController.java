@@ -24,7 +24,7 @@ import com.dwellsmart.service.IUserService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping(Endpoints.MANAGER)
+@RequestMapping(Endpoints.MANAGEMENT)
 public class ManagementController {
 
 	@Autowired
@@ -42,10 +42,10 @@ public class ManagementController {
 	public ResponseEntity<String> createManager(@Valid @RequestBody CreateUserRequest createManagerRequest) {
 
 		User user = User.builder().username(createManagerRequest.getUsername())
-				.password(encoder.encode(createManagerRequest.getPassword())).build();
+				.password(encoder.encode(createManagerRequest.getPassword())).email(createManagerRequest.getEmail()).build();
 
 		Role role = Role.builder().role(RoleType.MANAGER).assignedAt(LocalDateTime.now()).build();
-
+//
 		user.addRole(role); // Add role to the user
 		iUserService.createNewUser(user);
 
@@ -53,6 +53,21 @@ public class ManagementController {
 
 	}
 
+//	@PostMapping("/create")
+//	public ResponseEntity<String> createProject(@Valid @RequestBody CreateUserRequest createManagerRequest) {
+//
+//		User user = User.builder().username(createManagerRequest.getUsername())
+//				.password(encoder.encode(createManagerRequest.getPassword())).build();
+//
+//		Role role = Role.builder().role(RoleType.MANAGER).assignedAt(LocalDateTime.now()).build();
+//
+//		user.addRole(role); // Add role to the user
+//		iUserService.createNewUser(user);
+//
+//		return ResponseEntity.status(HttpStatus.CREATED).body("User created successfully");
+//
+//	}
+	
 	@PutMapping
 	public String put() {
 		return "PUT:: management controller";

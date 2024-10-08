@@ -28,7 +28,7 @@ public class AccountService {
         if (optionalAccount.isPresent()) {
             Account account = optionalAccount.get();
             account.setAccountBalance(newBalance);
-            account.setLastUpdatedDate(new java.util.Date());
+//            account.setLastUpdatedDate(new java.util.Date());
             return accountRepository.save(account);
         } else {
             throw new RuntimeException("Account not found with id: " + accountId);

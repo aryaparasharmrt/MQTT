@@ -32,21 +32,21 @@ public class ResidentService {
 	@Transactional
 	public Resident createResident(Resident resident) {
 		
-		User user = User.builder().username("demo1").password("useme123").build();
-		
-		user.addRole(Role.builder().role(RoleType.USER).assignedAt(LocalDateTime.now()).project(resident.getProject()).build());
-		
-//		service.createNewUser(user);
-		
-		resident.setUser(user);
-		
-		// Create a new account with default values
-		Account account = new Account();
-		// Associate account with the resident
-		account.setResident(resident);
-		resident.setAccount(account);
-		
-		resident.setSite(resident.getProject().getDefaultSite());
+//		User user = User.builder().username("demo1").password("useme123").build();
+//		
+//		user.addRole(Role.builder().role(RoleType.USER).assignedAt(LocalDateTime.now()).project(resident.getProject()).build());
+//		
+////		service.createNewUser(user);
+//		
+//		resident.setUser(user);
+//		
+//		// Create a new account with default values
+//		Account account = new Account();
+//		// Associate account with the resident
+//		account.setResident(resident);
+//		resident.setAccount(account);
+//		
+//		resident.setSite(resident.getProject().getDefaultSite());
 
 		return residentRepository.save(resident);
 	}

@@ -39,6 +39,7 @@ public class Account {
 	    private Long accountId;
 
 	    @Column(name = "account_balance", nullable = false)
+	    @Builder.Default
 	    private BigDecimal accountBalance= BigDecimal.ZERO;
 
 	    @Column(name = "last_recharge_date")
@@ -51,48 +52,48 @@ public class Account {
 	    @Column(name = "interest_amount")
 	    private BigDecimal interestAmount;
 
-	    @Column(name = "last_invoice_id")
-	    private BigDecimal lastInvoiceId;
+//	    @Column(name = "last_invoice_id")
+//	    private BigDecimal lastInvoiceId;
 
 	    @Column(name = "last_dg_reading")
 	    private BigDecimal lastDgReading;
 
-	    @Column(name = "last_grid_reading")
-	    private BigDecimal lastGridReading;
+//	    @Column(name = "last_grid_reading")
+//	    private BigDecimal lastGridReading;
 
-	    @Column(name = "last_reading_dte")
-	    @Temporal(TemporalType.DATE)
-	    private Date lastReadingDate;
+//	    @Column(name = "last_reading_dte")
+//	    @Temporal(TemporalType.DATE)
+//	    private Date lastReadingDate;
 
-	    @Column(name = "date_last_synched_manually")
-	    @Temporal(TemporalType.DATE)
-	    private Date dateLastSynchedManually;
+//	    @Column(name = "date_last_synched_manually")
+//	    @Temporal(TemporalType.DATE)
+//	    private Date dateLastSynchedManually;
 
-	    @Column(name = "last_invoice_dg_reading")
-	    private BigDecimal lastInvoiceDgReading;
+//	    @Column(name = "last_invoice_dg_reading")
+//	    private BigDecimal lastInvoiceDgReading;
 
-	    @Column(name = "last_invoice_grid_reading")
-	    private BigDecimal lastInvoiceGridReading;
+//	    @Column(name = "last_invoice_grid_reading")
+//	    private BigDecimal lastInvoiceGridReading;
 
-	    @Column(name = "connection_kv")
-	    private BigDecimal connectionKv;
+//	    @Column(name = "connection_kv")
+//	    private BigDecimal connectionKv;
 
 //	    @Column(name = "last_account_balance", nullable = false, columnDefinition = "numeric default 0.0")
-	    @Column(name = "last_account_balance")
-	    private BigDecimal lastAccountBalance;
+//	    @Column(name = "last_account_balance")
+//	    private BigDecimal lastAccountBalance;
 
-	    @Column(name = "last_inv_date")
-	    @Temporal(TemporalType.DATE)
-	    private Date lastInvDate;
+//	    @Column(name = "last_inv_date")
+//	    @Temporal(TemporalType.DATE)
+//	    private Date lastInvDate;
 
 //	    @Column(name = "creation_date", nullable = false)
-	    @Column(name = "creation_date")
-	    @Temporal(TemporalType.DATE)
-	    private Date creationDate;
+//	    @Column(name = "creation_date")
+//	    @Temporal(TemporalType.DATE)
+//	    private Date creationDate;
 
-	    @Column(name = "last_updated_date")
-	    @Temporal(TemporalType.DATE)
-	    private Date lastUpdatedDate;
+//	    @Column(name = "last_updated_date")
+//	    @Temporal(TemporalType.DATE)
+//	    private Date lastUpdatedDate;
 	    
 	    @OneToOne(fetch= FetchType.LAZY)
 		@JoinColumn(name="resident_id")

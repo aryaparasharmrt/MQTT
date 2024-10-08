@@ -1,5 +1,8 @@
 package com.dwellsmart.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -10,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -60,7 +64,8 @@ public class Resident {
 	private String meterId;
 
 	@Column(name = "status", length = 5)
-	private String status;  //Active - A , Inactive - I 
+	@Builder.Default
+	private String status = "A";  //Active - A , Inactive - I 
 	
 	@OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
 	@Basic(optional = false)
@@ -73,8 +78,21 @@ public class Resident {
 	private Project project;
 	
 	// One-to-One relationship with Resident
-	@OneToOne(mappedBy = "resident",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-	private Account account;
+	@OneToMany(mappedBy = "resident",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+	@Builder.Default
+	private List<Account> accounts = new ArrayList<>();
+	
+	 // Add site to the project
+    public void addAccount(Account account) {
+        accounts.add(account);           // Add site to the list
+        account.setResident(this);      // Set the project reference in the site
+    }
+
+    // Remove site from the project
+    public void removeAccount(Account account) {
+        accounts.remove(account);         // Remove site from the list
+        account.setResident(null);      // Remove the project reference from the site
+    }
 	
 	
 //	@Column(name = "date_of_possession")

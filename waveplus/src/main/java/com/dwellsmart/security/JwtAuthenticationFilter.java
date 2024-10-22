@@ -94,8 +94,8 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
 	protected void doFilterInternal(@NonNull HttpServletRequest req, @NonNull HttpServletResponse res,
 			@NonNull FilterChain chain) throws ServletException, IOException {
 
-		if (req.getServletPath().contains(PUBLIC)) {
-			chain.doFilter(req, res);
+		if (req.getServletPath().contains(AUTHENTICATE)) {
+			chain.doFilter(req, res);	
 			return;
 		}
 		String header = req.getHeader(HttpHeaders.AUTHORIZATION);

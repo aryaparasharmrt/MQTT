@@ -46,6 +46,13 @@ public class User {
 	@Column(nullable = false)
 	private Long userId;
 
+	@Column(length = 150)
+    private String fullname; 
+	
+	@Basic(optional = false)
+	@Column(nullable = false)
+	private String phoneNumber;
+	
 	@Basic(optional = false)
 	@Column(unique = true, nullable = false)
 	private String username;
@@ -68,7 +75,7 @@ public class User {
 
 //	@ElementCollection(targetClass = Role.class) // Defines a collection of Role enums that will be stored in a separate table
 	
-	@Enumerated(EnumType.STRING) 
+//	@Enumerated(EnumType.STRING) 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)  // orphanRemoval = true -> think later
 	@Builder.Default
 	private Set<Role> roles = new HashSet<>(); // Default initialization
@@ -82,7 +89,7 @@ public class User {
     private Resident resident;
     
     @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
-    private List<AccountTransactions> accountTransactions;
+    private List<AccountTransaction> accountTransactions;
 
 //    @PrePersist
 //    public void ensureAtLeastOneRole() {

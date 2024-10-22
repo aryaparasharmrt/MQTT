@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(BASE)
+@RequestMapping(BASE + AUTHENTICATE)
 public class AuthenticationController {
 
   private final IAuthenticationService authenticationService;
@@ -36,7 +36,7 @@ public class AuthenticationController {
 		else throw new ApplicationException("Bad Request : Device Type only 'WEB/AND/IOS' Allowed");
 	}
 
-	@PostMapping(PUBLIC + AUTHENTICATE)
+	@PostMapping(TOKEN)
 	public ResponseEntity<AuthResponse> authenticate(@Valid @RequestBody AuthRequest loginRequest) {
 
 		if (Constants.CLIENT_AND.equalsIgnoreCase(loginRequest.getDeviceType())
@@ -50,7 +50,7 @@ public class AuthenticationController {
 		return ResponseEntity.ok(authenticationService.authenticate(loginRequest));
 	}
 
-	@PostMapping(PUBLIC + REFRESH_TOKEN)
+	@PostMapping(REFRESH)
 	public ResponseEntity<AuthResponse> refreshAccessToken(@Valid @RequestBody RefreshTokenOrLogoutRequest tokenRequest) {
 		return ResponseEntity.ok(authenticationService.refreshToken(tokenRequest));
 	}
@@ -60,7 +60,7 @@ public class AuthenticationController {
 //		return ResponseEntity.ok(service.register(request));
 //	}
 
-	@PostMapping(PUBLIC + LOGOUT)
+	@PostMapping(LOGOUT)
 	public ResponseEntity<String> logout(@Valid @RequestBody RefreshTokenOrLogoutRequest logoutRequest) {
 		
 		return  ResponseEntity.ok(authenticationService.logout(logoutRequest));

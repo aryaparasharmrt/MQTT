@@ -14,11 +14,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.dwellsmart.constants.Endpoints;
 import com.dwellsmart.entity.Site;
 import com.dwellsmart.service.ISiteService;
 
 @RestController
-@RequestMapping("/api/sites")
+@RequestMapping(Endpoints.BASE+ Endpoints.SITES)
 public class SiteController {
 
     @Autowired

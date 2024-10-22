@@ -1,7 +1,6 @@
 package com.dwellsmart.entity;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
@@ -13,9 +12,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,102 +22,90 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "residents")
+@Table(name = "residents", uniqueConstraints = {@UniqueConstraint(columnNames = {"flat_no", "project_id"})})
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"user","project","site","account"})
 public class Resident {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(nullable = false)
 	private Long residentId;
-	
-
-
-	
-	
-//	@Column(nullable = false, length = 40)
-	@ManyToOne(fetch= FetchType.LAZY)
-	@JoinColumn(name="site_id")
-	private Site site;
 
 	@Column(length = 150)
-	private String customerName;
+	private String primaryOwnerName;
 
-	@Column(length = 80)
+	@Column(length = 150)
+	private String secondaryOwnerName;
+
+	@Basic(optional = false)
+	@Column(nullable = false, length = 80)
 	private String emailId;
 
-	@Column
-	private Long phoneNumber;
+	@Basic(optional = false)
+	@Column(nullable = false)
+	private String phoneNumber;
 
+	@Basic(optional = false)
 	@Column(nullable = false, length = 20)
 	private String flatNo;
 
+	@Basic(optional = false)
 	@Column(nullable = false)
 	private Long flatArea;
 
-	@Column(name = "meter_id", length = 40)
-	private String meterId;
+	@Column(length = 40)
+	private String meterRefId;   
 
-	@Column(name = "status", length = 5)
+	@Column(length = 20)
+	private String occupancyType;
+
+	@Column(nullable = false)
 	@Builder.Default
-	private String status = "A";  //Active - A , Inactive - I 
-	
-	@OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-	@Basic(optional = false)
-	@JoinColumn(name = "user_id",nullable = false) // referencedColumnName = "username", insertable = false, updatable = false -> we will discuss later
-	private User user;
+	private Boolean emailPreference = false;
 
-	@ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+	@Column(nullable = false)
+	@Builder.Default
+	private Boolean smsPreference = false;
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Boolean isActive = true;
+
+	@OneToOne(fetch = FetchType.LAZY) //, cascade = CascadeType.ALL
+	@Basic(optional = false)
+	@JoinColumn(name = "user_id", nullable = false) // referencedColumnName = "username", insertable = false, updatable
+	private User user; // = false -> we will discuss later
+
+	@ManyToOne(fetch = FetchType.LAZY)  //cascade = CascadeType.ALL
 	@Basic(optional = false)
 	@JoinColumn(name = "project_id", nullable = false)
 	private Project project;
-	
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "site_id", nullable = false)
+	private Site site;
+
+	@OneToOne(mappedBy = "resident", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private Account account;
+
 	// One-to-One relationship with Resident
-	@OneToMany(mappedBy = "resident",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-	@Builder.Default
-	private List<Account> accounts = new ArrayList<>();
-	
-	 // Add site to the project
-    public void addAccount(Account account) {
-        accounts.add(account);           // Add site to the list
-        account.setResident(this);      // Set the project reference in the site
-    }
+//	@OneToMany(mappedBy = "resident",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+//	@Builder.Default
+//	private List<Account> accounts = new ArrayList<>();
 
-    // Remove site from the project
-    public void removeAccount(Account account) {
-        accounts.remove(account);         // Remove site from the list
-        account.setResident(null);      // Remove the project reference from the site
-    }
-	
-	
-//	@Column(name = "date_of_possession")
-//	@Temporal(TemporalType.DATE)
-//	private Date dateOfPossession;
-
-//	@Column(name = "transfer_memorandum_number", length = 50)
-//	private String transferMemorandumNumber;
-
-//	@Column(name = "society_membership_number", length = 50)
-//	private String societyMembershipNumber;
+//    public void addAccount(Account account) {
+//        accounts.add(account);          
+//        account.setResident(this);     
+//    }
 //
-//	@Column(name = "membership_receipt", length = 20)
-//	private String membershipReceipt;
-//
-//	@Column(name = "receipt_date")
-//	@Temporal(TemporalType.DATE)
-//	private Date receiptDate;
-//
-//	@Column(name = "receipt_amt", precision = 10, scale = 2)
-//	private Long receiptAmt;
-
-//	@Column(name = "img_name", columnDefinition = "TEXT")
-//	private String imgName;
-//
-//	@Column(name = "img")
-//	private byte[] img;
+//    public void removeAccount(Account account) {
+//        accounts.remove(account);       
+//        account.setResident(null);      
+//    }		
 
 }

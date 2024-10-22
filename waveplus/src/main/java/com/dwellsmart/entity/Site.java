@@ -1,6 +1,9 @@
 package com.dwellsmart.entity;
 
 import java.util.List;
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
@@ -28,6 +31,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"project","residents"})
 public class Site {
 
 	@Id
@@ -230,4 +234,20 @@ public class Site {
 
 	@OneToMany(mappedBy = "site", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<Resident> residents;
+
+//	@Override
+//	public boolean equals(Object o) {
+//		if (this == o)
+//			return true;
+//		if (o == null || getClass() != o.getClass())
+//			return false;
+//		Site site = (Site) o;
+//		return Objects.equals(siteId, site.siteId);
+//	}
+//
+//	@Override
+//	public int hashCode() {
+//		return Objects.hash(siteId);
+//	}
+	
 }

@@ -1,9 +1,14 @@
 package com.dwellsmart.entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -30,33 +35,31 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Account {
-	
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column
+	private Long accountId;
 
-	    @Id
-	    @GeneratedValue(strategy = GenerationType.IDENTITY)
-	    @Column
-	    private Long accountId;
+	@Column(name = "account_balance", nullable = false)
+	@Builder.Default
+	private Double accountBalance = 0.0;
 
-	    @Column(name = "account_balance", nullable = false)
-	    @Builder.Default
-	    private BigDecimal accountBalance= BigDecimal.ZERO;
+//	    @Column(name = "last_recharge_date")
+//	    @Temporal(TemporalType.DATE)
+//	    private Date lastRechargeDate;
 
-	    @Column(name = "last_recharge_date")
-	    @Temporal(TemporalType.DATE)
-	    private Date lastRechargeDate;
+//	    @Column(name = "last_recharge_amount")
+//	    private BigDecimal lastRechargeAmount;
 
-	    @Column(name = "last_recharge_amount")
-	    private BigDecimal lastRechargeAmount;
-
-	    @Column(name = "interest_amount")
-	    private BigDecimal interestAmount;
+//	    @Column(name = "interest_amount")
+//	    private BigDecimal interestAmount;
 
 //	    @Column(name = "last_invoice_id")
 //	    private BigDecimal lastInvoiceId;
 
-	    @Column(name = "last_dg_reading")
-	    private BigDecimal lastDgReading;
+//	    @Column(name = "last_dg_reading")
+//	    private BigDecimal lastDgReading;
 
 //	    @Column(name = "last_grid_reading")
 //	    private BigDecimal lastGridReading;
@@ -86,22 +89,19 @@ public class Account {
 //	    @Temporal(TemporalType.DATE)
 //	    private Date lastInvDate;
 
-//	    @Column(name = "creation_date", nullable = false)
-//	    @Column(name = "creation_date")
-//	    @Temporal(TemporalType.DATE)
-//	    private Date creationDate;
+	@CreationTimestamp
+	@Column(updatable = false, nullable = false)
+	private LocalDateTime createdAt;
 
-//	    @Column(name = "last_updated_date")
-//	    @Temporal(TemporalType.DATE)
-//	    private Date lastUpdatedDate;
-	    
-	    @OneToOne(fetch= FetchType.LAZY)
-		@JoinColumn(name="resident_id")
-		private Resident resident;
-	    
-	    @OneToMany(mappedBy = "account",fetch = FetchType.LAZY)
-	    private List<AccountTransactions> accountTransactions;
+	@UpdateTimestamp
+	@Column(nullable = false)
+	private LocalDateTime updatedAt;
 
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "resident_id", nullable = false)
+	private Resident resident;
 
+	@OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private List<AccountTransaction> accountTransactions;
 
 }

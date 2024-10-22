@@ -1,10 +1,10 @@
 package com.dwellsmart.service.impl;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -24,7 +24,6 @@ import com.dwellsmart.service.IAuthenticationService;
 import com.dwellsmart.service.IDeviceService;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -37,6 +36,15 @@ public class AuthenticationService implements IAuthenticationService {
 
 	private final IDeviceService deviceService;
 	private final UserDetailsService userDetailsService;
+	
+	
+	 @Autowired
+	    private HttpServletRequest request;
+
+	    public String getCustomField() {
+	        // Fetch custom field from the request attribute
+	        return (String) request.getAttribute("customField");
+	    }
 
 //	public AuthenticationResponse register(RegisterRequest request) {
 //		var user = User.builder().firstname(request.getFirstname()).lastname(request.getLastname())

@@ -1,5 +1,6 @@
 package com.dwellsmart.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -10,12 +11,18 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.dwellsmart.constants.RoleType;
+import com.dwellsmart.dto.UserDTO;
+import com.dwellsmart.entity.Project;
+import com.dwellsmart.entity.Role;
 import com.dwellsmart.entity.User;
 import com.dwellsmart.exception.ResourceNotFoundException;
 import com.dwellsmart.repository.RoleRepository;
 import com.dwellsmart.repository.UserRepository;
+import com.dwellsmart.service.IProjectService;
 import com.dwellsmart.service.IUserService;
 
 import jakarta.transaction.Transactional;
@@ -29,19 +36,32 @@ public class UserService implements IUserService, UserDetailsService {
 
 	private final UserRepository repository;
 	
-	@Autowired
-	private RoleRepository roleRepository;
-	
 	
 //	@Override
 //	public List<User> findAll() {
 //		return repository.findAll();
 //	}
+	
+	public Optional<User> findById(Long userId) {
+		return repository.findById(userId);
+	}
 
 	@Transactional
 	@Override
-	public User createNewUser(User user) {
+	public void createNewUser(User user) {
 		
+//		Optional<Project> projectById = iProjectService.getProjectById(userDTO.getProjectId());
+//		
+//		User user = User.builder().email(userDTO.getEmail()).password(encoder.encode(userDTO.getPassword()))
+//				.username(userDTO.getUsername()).build();
+//		user.addRole(
+//				Role.builder().role(userDTO.getRoleType()).assignedAt(LocalDateTime.now()).project(projectById.get()).build());
+		
+		 repository.save(user);
+	}
+	
+	@Override
+	public User saveUser(User user) {
 		return repository.save(user);
 	}
 

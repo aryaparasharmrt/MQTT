@@ -9,6 +9,8 @@ import java.util.Set;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -18,9 +20,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,6 +34,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"sites","roles","residents","accountTransactions"})
 public class Project {
 
 	@Id
@@ -158,7 +159,7 @@ public class Project {
     
     
     @OneToMany(mappedBy = "project",fetch = FetchType.LAZY)
-    private List<AccountTransactions> accountTransactions;
+    private List<AccountTransaction> accountTransactions;
     
     
 
@@ -177,4 +178,20 @@ public class Project {
     public Site getDefaultSite() {
     	return sites.get(0);
     }
+    
+//	@Override
+//	public boolean equals(Object o) {
+//		if (this == o)
+//			return true;
+//		if (o == null || getClass() != o.getClass())
+//			return false;
+//		Project project = (Project) o;
+//		return Objects.equals(projectId, project.projectId);
+//	}
+//
+//	@Override
+//	public int hashCode() {
+//		return Objects.hash(projectId);
+//	}
+    
 }

@@ -1,7 +1,6 @@
 package com.dwellsmart.controller;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,14 +12,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dwellsmart.constants.Constants;
 import com.dwellsmart.constants.Endpoints;
 import com.dwellsmart.dto.request.AuthRequest;
-import com.dwellsmart.dto.request.CreateUserRequest;
+import com.dwellsmart.dto.request.CreateUserResquest;
 import com.dwellsmart.dto.response.AuthResponse;
-import com.dwellsmart.dto.response.CreateUserResponse;
 import com.dwellsmart.entity.User;
-import com.dwellsmart.exception.BadRequestException;
 import com.dwellsmart.security.JwtUtil;
 import com.dwellsmart.service.IUserService;
 
@@ -81,7 +77,7 @@ public class UserController {
 	}
 
 	@PostMapping("/create")
-	public CreateUserResponse createUser(@Valid @RequestBody CreateUserRequest request) {
+	public CreateUserResquest createUser(@Valid @RequestBody CreateUserResquest request) {
 
 //		if (request.getUsername() == null || request.getUsername().equals("")) {
 //			throw new BadRequestException(Constants.MESSAGE_INVALIDUSERNAME);
@@ -103,10 +99,10 @@ public class UserController {
 		user.setUsername(request.getUsername());
 	
 //		user.setRole("USER");
-		User userRes = userService.createNewUser(user);
+//		UserDTO userRes = userService.createNewUser(user);
 
-		CreateUserResponse response = new CreateUserResponse();
-		response.setUsername(userRes.getUsername());
+		CreateUserResquest response = new CreateUserResquest();
+//		response.setUsername(userRes.getUsername());
 		return response;
 	}
 //	

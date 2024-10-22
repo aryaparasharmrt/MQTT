@@ -33,7 +33,7 @@ public class AccountController {
 
     // Update account balance
     @PutMapping("/{accountId}/balance")
-    public ResponseEntity<Account> updateAccountBalance(@PathVariable Long accountId, @RequestBody BigDecimal newBalance) {
+    public ResponseEntity<Account> updateAccountBalance(@PathVariable Long accountId, @RequestBody Double newBalance) {
         try {
             Account updatedAccount = accountService.updateAccountBalance(accountId, newBalance);
             return new ResponseEntity<>(updatedAccount, HttpStatus.OK);

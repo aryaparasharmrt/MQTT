@@ -58,7 +58,7 @@ public class ProjectService implements IProjectService {
 		
 		
 		User user = User.builder().username(createProject.getUsername())
-				.password(encoder.encode(createProject.getPassword())).email(createProject.getEmail())
+				.password(encoder.encode(createProject.getPassword())).email(createProject.getEmail()).phoneNumber(createProject.getPhoneNumber())
 			.build();
 
 		Role role = Role.builder().role(RoleType.ADMIN).assignedAt(LocalDateTime.now()).project(project).build();
@@ -66,6 +66,8 @@ public class ProjectService implements IProjectService {
 		user.addRole(role); // Add role to the user
 		
 		iUserService.createNewUser(user); //with this project also created
+		
+		createProject(project);
 
 		return true;
 	}

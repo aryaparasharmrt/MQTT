@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.dwellsmart.constants.Endpoints;
 import com.dwellsmart.constants.RoleType;
-import com.dwellsmart.dto.request.CreateUserRequest;
+import com.dwellsmart.dto.UserDTO;
 import com.dwellsmart.entity.Role;
 import com.dwellsmart.entity.User;
 import com.dwellsmart.service.IUserService;
@@ -39,10 +39,11 @@ public class ManagementController {
 	}
 
 	@PostMapping("/create")
-	public ResponseEntity<String> createManager(@Valid @RequestBody CreateUserRequest createManagerRequest) {
+	public ResponseEntity<String> createManager(@Valid @RequestBody UserDTO userDTO) {
 
-		User user = User.builder().username(createManagerRequest.getUsername())
-				.password(encoder.encode(createManagerRequest.getPassword())).email(createManagerRequest.getEmail()).build();
+		User user = User.builder().username(userDTO.getUsername())
+				
+				.password(encoder.encode(userDTO.getPassword())).email(userDTO.getEmail()).phoneNumber(userDTO.getPhoneNumber()).build();
 
 		Role role = Role.builder().role(RoleType.MANAGER).assignedAt(LocalDateTime.now()).build();
 //

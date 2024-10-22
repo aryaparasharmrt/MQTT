@@ -9,9 +9,18 @@ public final class Constants {
 	public static final String CLIENT_WEB = "WEB";
 	
 	public static final String TOKEN_PREFIX = "Bearer ";
-	
-	public static final String MAIN_CURRENCY = "TRY";
-	
+
+	public static final String TXN_TYPE_CREDIT = "Credit";
+	public static final String TXN_TYPE_DEBIT = "Debit";
+	public static final String TXN_TYPE_RECHARGE = "Recharge";
+
+	public static final String TXN_MODE_AUTO = "Auto";
+	public static final String TXN_MODE_MANUAL = "Manual";
+	public static final String TXN_MODE_CHEQUE = "Cheque";
+	public static final String TXN_MODE_CASH = "Cash";
+	public static final String TXN_MODE_NEFT = "NEFT";
+	public static final String TXN_MODE_ONLINE = "Online";
+
 	public static final String MESSAGE_INVALIDUSERNAME = "Invalid username.";
 	public static final String MESSAGE_INVALIDPASSWORD = "Invalid password.";
 	public static final String MESSAGE_INVALIDCURRENCY = "Invalid currency.";
@@ -22,6 +31,6 @@ public final class Constants {
 	public static final String MESSAGE_SAMEUSERTRANSACTION = "You can't send money to yourself.";
 	public static final String MESSAGE_SAMEUSERNAMEEXIST = "User with the same name exists.";
 	public static final String MESSAGE_SAMETCNOEXIST = "User with the same tc no exists.";
-	public static final String MESSAGE_EXCHANGESWITHMAINCURRENCY = "You can't make exchange transactions with " + MAIN_CURRENCY;
+	public static final String MESSAGE_EXCHANGESWITHMAINCURRENCY = "You can't make exchange transactions with ";
 
 }

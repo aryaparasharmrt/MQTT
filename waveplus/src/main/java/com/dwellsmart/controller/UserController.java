@@ -8,11 +8,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dwellsmart.constants.Endpoints;
+import com.dwellsmart.dto.ChangePasswordRequestDTO;
 import com.dwellsmart.dto.request.AuthRequest;
 import com.dwellsmart.dto.request.CreateUserResquest;
 import com.dwellsmart.dto.response.AuthResponse;
@@ -119,4 +121,15 @@ public class UserController {
 //        return ResponseEntity.ok("Registration successful");
 //    }
 
+    @PutMapping("/change-password")
+    public ResponseEntity<String> changePassword(UsernamePasswordAuthenticationToken token,
+                                                 @Valid @RequestBody ChangePasswordRequestDTO changePasswordRequestDTO) {
+        // Extract username from the token
+//        String username = jwtUtil.extractUsername(token.g(7)); // Remove "Bearer " prefix
+    	String username = ((UserDetails)token.getPrincipal()).getUsername();
+    	
+    	System.out.println(((UserDetails)token.getPrincipal()).getPassword());
+        return userService.changePassword(username, changePasswordRequestDTO);
+        
+    }
 }

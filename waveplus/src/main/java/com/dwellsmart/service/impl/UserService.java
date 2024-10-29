@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.dwellsmart.constants.RoleType;
+import com.dwellsmart.dto.ChangePasswordRequestDTO;
 import com.dwellsmart.dto.UserDTO;
 import com.dwellsmart.entity.Project;
 import com.dwellsmart.entity.Role;
@@ -35,6 +38,10 @@ import lombok.RequiredArgsConstructor;
 public class UserService implements IUserService, UserDetailsService {
 
 	private final UserRepository repository;
+	
+	@Autowired
+	@Lazy
+	PasswordEncoder passwordEncoder;
 	
 	
 //	@Override
@@ -94,6 +101,19 @@ public class UserService implements IUserService, UserDetailsService {
 //		User user = repository.findByUsername(username);
 //		return user != null;
 //	}
-	
+//	
+	@Override
+	public ResponseEntity<String> changePassword(String username, ChangePasswordRequestDTO changePasswordRequestDTO) {
+	    User user = repository.findByUsername(username);
+	    if (user != null && passwordEncoder.matches(changePasswordRequestDTO.getOldPassword(), user.getPassword())) {
+	        String newEncodedPassword = passwordEncoder.encode(changePasswordRequestDTO.getNewPassword());
+	        user.setPassword(newEncodedPassword);
+	        System.out.print("Password set successfully");
+	        repository.save(user);
+	        return ResponseEntity.ok("Password changed successfully.");
+	    } else {
+	        return ResponseEntity.status(401).body("Invalid old password.");
+	    }
+	}
 
 }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- SQL query logging -->
+    <logger name="org.hibernate.SQL" level="TRACE"/>
+
+    <!-- SQL parameter binding logging -->
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
+
+    <!-- Console Appender to see logs in the console -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+           <!-- <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>-->
+           <!-- <pattern> [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] [${springAppName},%X{X-B3-TraceId},%X{X-B3-SpanId}] %c{1} - %msg%n</pattern>-->
+            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %highlight(%-5level) [%thread] %logger{36} : %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root logger configuration -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>

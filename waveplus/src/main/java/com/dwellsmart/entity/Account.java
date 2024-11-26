@@ -41,7 +41,7 @@ public class Account {
 	@Column
 	private Long accountId;
 
-	@Column(name = "account_balance", nullable = false)
+	@Column(nullable = false)
 	@Builder.Default
 	private Double accountBalance = 0.0;
 
@@ -58,15 +58,16 @@ public class Account {
 //	    @Column(name = "last_invoice_id")
 //	    private BigDecimal lastInvoiceId;
 
-//	    @Column(name = "last_dg_reading")
-//	    private BigDecimal lastDgReading;
+	@Column(nullable = false)
+	@Builder.Default
+	private Double lastDgReading = 0.0;
 
-//	    @Column(name = "last_grid_reading")
-//	    private BigDecimal lastGridReading;
+	@Column(nullable = false)
+	@Builder.Default
+	private Double lastGridReading = 0.0;
 
-//	    @Column(name = "last_reading_dte")
-//	    @Temporal(TemporalType.DATE)
-//	    private Date lastReadingDate;
+	@Column(nullable = false)
+    private LocalDateTime lastReadingDate;
 
 //	    @Column(name = "date_last_synched_manually")
 //	    @Temporal(TemporalType.DATE)
@@ -101,7 +102,7 @@ public class Account {
 	@JoinColumn(name = "resident_id", nullable = false)
 	private Resident resident;
 
-	@OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "account", fetch = FetchType.LAZY) //, cascade = CascadeType.ALL - remove casecade operation think later
 	private List<AccountTransaction> accountTransactions;
 
 }

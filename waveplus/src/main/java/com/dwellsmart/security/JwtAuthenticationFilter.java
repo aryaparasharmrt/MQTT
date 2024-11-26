@@ -1,11 +1,14 @@
 package com.dwellsmart.security;
 
+import static com.dwellsmart.constants.Constants.TOKEN_PREFIX;
+import static com.dwellsmart.constants.Endpoints.AUTHENTICATE;
+
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,11 +20,12 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.stereotype.Component;
 
+import com.dwellsmart.constants.ErrorCode;
 import com.dwellsmart.dto.DeviceDTO;
+import com.dwellsmart.dto.response.ResponseError;
+import com.dwellsmart.exception.Auth;
 import com.dwellsmart.service.IDeviceService;
-
-import static com.dwellsmart.constants.Constants.TOKEN_PREFIX;
-import static com.dwellsmart.constants.Endpoints.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -31,7 +35,6 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
 
-	// Define the list of endpoints to exclude from JWT processing
 //    private static final List<String> EXCLUDED_PATHS = List.of("/authenticate", "/register");
 	// Get the request URI
 //    String requestPath = request.getRequestURI();
@@ -43,38 +46,8 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
 //        return;
 //    }
 //
-//    // JWT validation logic for all other requests
-//    String jwt = extractJwtFromRequest(request);
-//    if (jwt != null && isValidToken(jwt)) {
-//        // Process the JWT and set authentication in the security context
-//        setAuthentication(jwt);
-//    }
-//
-//    // Continue the filter chain
-//    chain.doFilter(request, response);
-//}
-//
 //private boolean isExcludedPath(String path) {
 //    return EXCLUDED_PATHS.contains(path);
-//}
-//
-//private String extractJwtFromRequest(HttpServletRequest request) {
-//    // Logic to extract JWT from the request
-//    String bearerToken = request.getHeader("Authorization");
-//    if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-//        return bearerToken.substring(7);
-//    }
-//    return null;
-//}
-//
-//private boolean isValidToken(String token) {
-//    // Logic to validate the JWT token
-//    return true; // Simplified for example purposes
-//}
-//
-//private void setAuthentication(String jwt) {
-//    // Set authentication based on JWT
-//    // e.g., SecurityContextHolder.getContext().setAuthentication(authentication);
 //}
 
 	@Autowired
@@ -94,10 +67,11 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
 	protected void doFilterInternal(@NonNull HttpServletRequest req, @NonNull HttpServletResponse res,
 			@NonNull FilterChain chain) throws ServletException, IOException {
 
-		if (req.getServletPath().contains(AUTHENTICATE)) {
-			chain.doFilter(req, res);	
+		if (isAuthenticationRequest(req)) {
+			chain.doFilter(req, res);
 			return;
 		}
+
 		String header = req.getHeader(HttpHeaders.AUTHORIZATION);
 
 		if (header == null || !header.startsWith(TOKEN_PREFIX)) {
@@ -105,66 +79,111 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
 			return;
 		}
 
-		UsernamePasswordAuthenticationToken authentication = getAuthentication(req);
+//		try {
+			UsernamePasswordAuthenticationToken authentication = getAuthentication(req);
+			if (authentication != null) {
+				SecurityContextHolder.getContext().setAuthentication(authentication);
+			}
+			else {  //Authentication Failed.
+				 SecurityContextHolder.clearContext();
+				throw new Auth("Unauth",ErrorCode.AUTHENTICATION_FAILED);
+			}
+			
+//		}catch(ApplicationException ex){
+////			throw new AuthenticationServiceException("Authentication Failed! "+ ex);
+//		}
 
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-		
-		chain.doFilter(req, res);
+//		try {
+			
+			chain.doFilter(req, res);
+//		}
+//		catch(Exception e) {
+//			System.out.println("hii...");
+//			System.out.println(e);
+//			
+//			 res.setContentType(MediaType.APPLICATION_JSON_VALUE);
+//			    res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//			    
+//			    
+////			    System.out.println(authException.toString());
+////			    System.out.println("thih..."+authException.getCause());
+////			    System.out.println(AuthenticationException);
+//
+//			    // Check if the authException is an instance of ApplicationException
+////			    if (authException.getCause() instanceof ApplicationException) {
+////			        ApplicationException appEx = (ApplicationException) authException.getCause();
+//			        // Create your custom error response based on ApplicationException
+//			        ResponseError responseError = new ResponseError();
+//			        responseError.setErrorCode(ErrorCode.AUTHENTICATION_FAILED.getErrorCode()); // Assuming ErrorCode has a method getCode()
+//			        responseError.setErrorMessage(ErrorCode.AUTHENTICATION_FAILED.getErrorMessage());
+//
+//			        // Write the custom error response to the output
+//			        final ObjectMapper mapper = new ObjectMapper();
+//			        mapper.writeValue(res.getOutputStream(), responseError);
+////			    } else {
+//			        // Handle other authentication exceptions (if any)
+////			        ResponseError responseError = new ResponseError();
+////			        responseError.setErrorCode("401"); // Default error code
+////			        responseError.setErrorMessage(authException.getMessage());
+////
+////			        // Write the generic error response to the output
+////			        final ObjectMapper mapper = new ObjectMapper();
+////			        mapper.writeValue(res.getOutputStream(), responseError);
+////			    }
+//
+//		}
+//		
+
+	}
+
+	private boolean isAuthenticationRequest(HttpServletRequest request) {
+		return request.getServletPath().contains(AUTHENTICATE);
 	}
 
 	private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
-		
+
 		String token = request.getHeader(HttpHeaders.AUTHORIZATION);
-		String jwtToken = token.replace(TOKEN_PREFIX, ""); // because already check token prefix
-//		String deviceId = request.getHeader("device_id"); // Get the device ID from the request header
+		String jwtToken = token.replace(TOKEN_PREFIX, ""); // Token prefix already checked
 
-		// JWT Validation and Client ID Check
-//		if (jwtToken != null && deviceId != null) {
-			if (jwtToken != null) {
+		if (jwtToken != null) {
+			String username = jwtUtil.extractUsername(jwtToken);
+			String deviceId = jwtUtil.extractDeviceId(jwtToken);
 
-			// Find device by client ID
-//			Optional<DeviceDTO> deviceOpt = deviceService.getDeviceByDeviceId(deviceId);
-//
-//			if (deviceOpt.isPresent()) {
-//				DeviceDTO device = deviceOpt.get();
+			if (!isValidDevice(deviceId)) {
+				return null; // Device revoked, stop processing
+			}
 
-				// Check if the device has been revoked (logout)
-//				if (device.isRevoked()) {
-//					// Token is invalid if the device is revoked
-//					return null; // Stop further processing
-//				}
-
-				// check some logic in more detail
-				String user = jwtUtil.extractUsername(jwtToken);
-
-				if (user != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-					UserDetails userDetails = null;
-					try {
-						userDetails = userDetailsService.loadUserByUsername(user);
-					} catch (UsernameNotFoundException e) {
-						// Handle exception if user is not found
-					}
-
-					if (userDetails != null && jwtUtil.validateToken(jwtToken, userDetails)) {
-						UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-								userDetails, null, userDetails.getAuthorities());
-						System.out.println(userDetails.getAuthorities());
-						usernamePasswordAuthenticationToken
-								.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-						return usernamePasswordAuthenticationToken;
-//						SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-						
-					}
+			if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+				UserDetails userDetails = null;
+				try {
+					userDetails = userDetailsService.loadUserByUsername(username);
+				} catch (UsernameNotFoundException e) {
+					// Log the exception if user is not found
+					return null;
 				}
 
-//				if (user != null) {
-//					return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
-//				}
-				return null;
-			} else {
-				return null; // Stop further processing
+				if (userDetails != null && jwtUtil.validateToken(jwtToken, userDetails)) {
+					UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+							userDetails, null, userDetails.getAuthorities());
+					usernamePasswordAuthenticationToken
+							.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+					return usernamePasswordAuthenticationToken;
+				}
 			}
-//		}
-//		return null;
+		}
+
+		return null;
+
 	}
+
+	private boolean isValidDevice(String deviceId) {
+		Optional<DeviceDTO> deviceOpt = deviceService.getDeviceByDeviceId(deviceId);
+
+		if (deviceOpt.isPresent() && deviceOpt.get().isRevoked()) {
+			System.out.println("Device is Revoked...");
+			return false;
+		}
+		return true;
+	}
+
 }

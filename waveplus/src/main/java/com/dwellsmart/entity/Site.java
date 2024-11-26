@@ -232,8 +232,12 @@ public class Site {
 	@JoinColumn(name = "project_id", nullable = false)
 	private Project project;
 
-	@OneToMany(mappedBy = "site", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "site", fetch = FetchType.LAZY) // cascade = CascadeType.ALL,
 	private List<Resident> residents;
+	
+	// One-to-Many relationship with MeterMap
+	@OneToMany(mappedBy = "site", fetch = FetchType.LAZY)
+	private List<MeterMap> metermaps;
 
 //	@Override
 //	public boolean equals(Object o) {

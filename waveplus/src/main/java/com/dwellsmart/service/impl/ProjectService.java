@@ -15,7 +15,9 @@ import com.dwellsmart.entity.Role;
 import com.dwellsmart.entity.Site;
 import com.dwellsmart.entity.User;
 import com.dwellsmart.repository.ProjectRepository;
+import com.dwellsmart.repository.RoleRepository;
 import com.dwellsmart.service.IProjectService;
+import com.dwellsmart.service.ISiteService;
 import com.dwellsmart.service.IUserService;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -31,6 +33,12 @@ public class ProjectService implements IProjectService {
 
 	@Autowired
 	private IUserService iUserService;
+	
+	@Autowired
+	private ISiteService iSiteService;
+	
+	@Autowired
+	private RoleRepository roleRepository;
 
 //	@Override
 //	public Project getProjectById(Integer projectId) {
@@ -57,6 +65,7 @@ public class ProjectService implements IProjectService {
 		project.addSite(site);
 		
 		
+		
 		User user = User.builder().username(createProject.getUsername())
 				.password(encoder.encode(createProject.getPassword())).email(createProject.getEmail()).phoneNumber(createProject.getPhoneNumber())
 			.build();
@@ -65,9 +74,15 @@ public class ProjectService implements IProjectService {
 
 		user.addRole(role); // Add role to the user
 		
+		
+		
+		
 		iUserService.createNewUser(user); //with this project also created
 		
+		roleRepository.save(role);
+		
 		createProject(project);
+		iSiteService.createSite(site);
 
 		return true;
 	}

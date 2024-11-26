@@ -1,12 +1,10 @@
 package com.dwellsmart.controller;
 
-import org.springframework.http.HttpStatus;
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,10 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dwellsmart.constants.Endpoints;
-import com.dwellsmart.dto.ChangePasswordRequestDTO;
-import com.dwellsmart.dto.request.AuthRequest;
+import com.dwellsmart.dto.request.ChangePasswordRequestDTO;
 import com.dwellsmart.dto.request.CreateUserResquest;
-import com.dwellsmart.dto.response.AuthResponse;
+import com.dwellsmart.entity.AccountTransaction;
 import com.dwellsmart.entity.User;
 import com.dwellsmart.security.JwtUtil;
 import com.dwellsmart.service.IUserService;
@@ -27,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 
 
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping(Endpoints.BASE+ Endpoints.USERS)
 @RequiredArgsConstructor
 public class UserController {
 
@@ -50,33 +47,6 @@ public class UserController {
 
 //	!Pattern.matches("[0-9]+", request.getTcno())
 	
-
-	@PostMapping(Endpoints.AUTHENTICATE)
-	public ResponseEntity<AuthResponse> authenticate(@RequestBody AuthRequest loginRequest) {
-
-		try {
-			// Authenticate the user
-			Authentication authentication = authenticationManager.authenticate(
-					new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-
-			// Set the authentication in the security context
-			SecurityContextHolder.getContext().setAuthentication(authentication);
-
-			// Retrieve user details from the authentication object
-			UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-
-			// Generate JWT token using user details
-			final String jwt = jwtUtil.generateToken(userDetails);
-
-			AuthResponse auth = AuthResponse.builder().accessToken(jwt).refreshToken(null).build();
-
-			return ResponseEntity.status(HttpStatus.OK).body(auth);
-
-		} catch (Exception e) {
-			throw new RuntimeException("Authentication failed", e);
-		}
-
-	}
 
 	@PostMapping("/create")
 	public CreateUserResquest createUser(@Valid @RequestBody CreateUserResquest request) {
@@ -122,14 +92,9 @@ public class UserController {
 //    }
 
     @PutMapping("/change-password")
-    public ResponseEntity<String> changePassword(UsernamePasswordAuthenticationToken token,
+    public ResponseEntity<String> changePassword(Authentication authentication,
                                                  @Valid @RequestBody ChangePasswordRequestDTO changePasswordRequestDTO) {
-        // Extract username from the token
-//        String username = jwtUtil.extractUsername(token.g(7)); // Remove "Bearer " prefix
-    	String username = ((UserDetails)token.getPrincipal()).getUsername();
-    	
-    	System.out.println(((UserDetails)token.getPrincipal()).getPassword());
-        return userService.changePassword(username, changePasswordRequestDTO);
+        return userService.changePassword(authentication, changePasswordRequestDTO);
         
     }
 }

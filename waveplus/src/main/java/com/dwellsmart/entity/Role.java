@@ -57,7 +57,7 @@ public class Role {
 //	@JsonIgnore // Prevent infinite recursion during serialization
 	private User user;
 	
-	@ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+	@ManyToOne(fetch = FetchType.LAZY) //,cascade = CascadeType.ALL
 	@JoinColumn(name = "project_id", nullable = true)
 	private Project project; // Nullable for BAM or global roles
 	

@@ -3,9 +3,10 @@ package com.dwellsmart.service;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 
-import com.dwellsmart.dto.ChangePasswordRequestDTO;
 import com.dwellsmart.dto.UserDTO;
+import com.dwellsmart.dto.request.ChangePasswordRequestDTO;
 import com.dwellsmart.entity.User;
 
 
@@ -19,7 +20,7 @@ public interface IUserService {
 
 	void createNewUser(User user);
     
-	ResponseEntity<String> changePassword(String username, ChangePasswordRequestDTO changePasswordRequestDTO);
+	ResponseEntity<String> changePassword(Authentication authentication, ChangePasswordRequestDTO changePasswordRequestDTO);
 //	User createNewUser(UserDTO user);
 	
 //	boolean isUsernameExist(String username);

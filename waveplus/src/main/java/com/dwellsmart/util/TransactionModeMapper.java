@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 
-import com.dwellsmart.constants.ErrorCodeEnum;
+import com.dwellsmart.constants.ErrorCode;
 import com.dwellsmart.constants.TransactionMode;
 import com.dwellsmart.constants.TransactionType;
 import com.dwellsmart.exception.ApplicationException;
@@ -21,7 +21,7 @@ public class TransactionModeMapper {
             case RECHARGE:
                 return EnumSet.of(TransactionMode.ONLINE, TransactionMode.CASH, TransactionMode.CHEQUE, TransactionMode.NEFT);
             default:
-                throw new ApplicationException(HttpStatus.BAD_REQUEST,ErrorCodeEnum.INVALID_TRANSACTION_TYPE.getErrorCode(),ErrorCodeEnum.INVALID_TRANSACTION_TYPE.getErrorMessage());
+                throw new ApplicationException(ErrorCode.INVALID_TRANSACTION_TYPE);
         }
     }
 

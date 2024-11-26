@@ -62,7 +62,7 @@ public class Device {
 	@Column(unique = true, nullable =  false)
 	private String refreshToken; // Device-specific refresh token
 	
-	@ManyToOne(fetch = FetchType.LAZY) // nullable = false - we will think later
+	@ManyToOne(fetch = FetchType.EAGER) // nullable = false - we will think later
 	@Basic(optional = false)
 	@JoinColumn(name = "user_id" , nullable = false) // referencedColumnName = "username") 
 	@JsonBackReference

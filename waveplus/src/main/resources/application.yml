@@ -16,16 +16,32 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-  boot:
-    admin:
-      client:
-        url: http://localhost:9090/
-server:
-  port: 8082
+#  boot:
+#    admin:
+#      client:
+#        url: http://localhost:9090/
+#server:
+#  port: 8082
+#    properties:
+#      hibernate:
+#          format_sql: true
+#          type: trace
+
+
+
+#logging:
+#  level:
+#    org:
+#      hibernate:
+#        SQL: DEBUG
+#        type:
+#          descriptor:
+#            sql:
+#              BasicBinder: TRACE
 app:
   jwt:
     secret: ======================MySecretKey=TestKey123======================================================
-    expiration: 3600
+    expiration: 3600  #for 1 hour = 3600  for 1 min = 60 
 management:
   endpoints:
     web:

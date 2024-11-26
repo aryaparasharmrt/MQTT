@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import javax.management.RuntimeErrorException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +20,7 @@ import com.dwellsmart.entity.Role;
 import com.dwellsmart.entity.Site;
 import com.dwellsmart.entity.User;
 import com.dwellsmart.repository.ResidentRepository;
+import com.dwellsmart.repository.RoleRepository;
 import com.dwellsmart.service.IProjectService;
 import com.dwellsmart.service.IResidentService;
 import com.dwellsmart.service.ISiteService;
@@ -36,6 +39,9 @@ public class ResidentService implements  IResidentService{
 	private IProjectService iProjectService;
 	
 	@Autowired
+	private RoleRepository roleRepository;
+	
+	@Autowired
 	private ISiteService iSiteService;
 	
 	@Autowired
@@ -43,6 +49,9 @@ public class ResidentService implements  IResidentService{
 	
 	@Autowired
 	private PasswordEncoder encoder;
+	
+	@Autowired 
+	private AccountService accountService;
 
 	// Create or Save a Resident
 //	@Transactional
@@ -106,10 +115,17 @@ public class ResidentService implements  IResidentService{
 	    Project project = iProjectService.getProjectById(residentDTO.getProjectId())
 	            .orElseThrow(() -> new IllegalArgumentException("Invalid project ID"));
 
-	    // Validate site existence
+//	     Validate site existence
 	    Site site = iSiteService.getSiteById(residentDTO.getSiteId())
 	            .orElseThrow(() -> new IllegalArgumentException("Invalid site ID"));
 
+	    List<Site> sites = project.getSites();
+	    boolean contains = sites.contains(site);
+	    if(!contains) {
+	    	throw new RuntimeException("Invalid Site Id:");
+	    }
+	    
+	    System.out.println("hii.....");
 	    User user = null;
 	    if (residentDTO.getUsername() != null && residentDTO.getPassword() != null) {
 	        user = User.builder()
@@ -122,16 +138,18 @@ public class ResidentService implements  IResidentService{
 	    			phoneNumber(residentDTO.getPhoneNumber()).build();
 	    }
 	        // Add role to the user
+	   Role userRole =  Role.builder().role(RoleType.USER).assignedAt(LocalDateTime.now()).project(project).build();
+	    
 	        user.addRole(
-	                Role.builder()
-	                        .role(RoleType.USER)
-	                        .assignedAt(LocalDateTime.now())
-	                        .project(project)
-	                        .build()
+	        		userRole
 	        );
 
 	        // Persist the user (if user service handles user creation)
 	        iUserService.createNewUser(user);
+	        roleRepository.save(userRole);
+	        
+	        
+	        
 	    
 
 	    // Create Resident entity
@@ -142,7 +160,7 @@ public class ResidentService implements  IResidentService{
 	            .flatArea(residentDTO.getFlatArea())
 	            .phoneNumber(residentDTO.getPhoneNumber())
 	            .emailId(residentDTO.getEmail())
-	            .meterRefId(residentDTO.getMeterId())
+//	            .meterRefId(residentDTO.getMeterId())
 	            .project(project)
 	            .site(site)
 	            .user(user) // associate user if created
@@ -150,14 +168,17 @@ public class ResidentService implements  IResidentService{
 
 	    // Create Account entity and associate with Resident
 	    Account account = Account.builder()
-	            .resident(resident).accountBalance(residentDTO.getInitialAccountBalance())
+	            .resident(resident).accountBalance(residentDTO.getInitialAccountBalance()).lastReadingDate(LocalDateTime.now())
 	            .build();
 
 	    // Establish bidirectional relationship
 	    resident.setAccount(account);
+	    
+	    
 
 	    // Save the resident entity, which should cascade the save to the associated account
 	    Resident savedResident = residentRepository.save(resident);
+	    accountService.addNewAccount(account);
 
 	    return savedResident != null;
 	    
@@ -184,7 +205,7 @@ public class ResidentService implements  IResidentService{
 //		resident.setPhoneNumber(residentDetails.getPhoneNumber());
 //		resident.setFlatNo(residentDetails.getFlatNo());
 //		resident.setFlatArea(residentDetails.getFlatArea());
-		resident.setMeterRefId(residentDetails.getMeterRefId());
+//		resident.setMeterRefId(residentDetails.getMeterRefId());
 		resident.setIsActive(residentDetails.getIsActive());
 
 		return residentRepository.save(resident);

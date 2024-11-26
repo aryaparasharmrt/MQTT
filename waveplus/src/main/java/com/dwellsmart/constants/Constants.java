@@ -4,6 +4,9 @@ public final class Constants {
 	
 	private Constants() {}
 	
+	public static final String COMPANY_NAME = "DwellSMART pvt. ltd.";
+
+	
 	public static final String CLIENT_IOS = "IOS";
 	public static final String CLIENT_AND = "AND";
 	public static final String CLIENT_WEB = "WEB";

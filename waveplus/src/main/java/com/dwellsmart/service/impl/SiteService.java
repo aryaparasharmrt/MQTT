@@ -18,8 +18,8 @@ public class SiteService implements ISiteService {
 	@Autowired
     private SiteRepository siteRepository;
 	
-	@Autowired
-	private IProjectService projectService;
+//	@Autowired
+//	private IProjectService projectService;
 
     @Override
     public List<Site> getAllSites() {

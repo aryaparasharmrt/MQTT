@@ -1,0 +1,22 @@
+package com.dwellsmart.config;
+
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+
+import com.dwellsmart.modbus.meter.SunStarDS;
+import com.dwellsmart.pojo.MeterAddressMap;
+
+import net.wimpi.modbus.net.RTUTCPMasterConnection;
+
+@Configuration
+public class MeterConfig {
+
+	@Bean
+	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+	SunStarDS sunStarMeterCreate(short slaveId, MeterAddressMap addressMap, RTUTCPMasterConnection connection) {
+		return new SunStarDS(slaveId, addressMap, connection);
+	}
+
+}

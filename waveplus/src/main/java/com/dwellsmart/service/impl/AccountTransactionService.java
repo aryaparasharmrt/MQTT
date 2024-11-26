@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.dwellsmart.constants.ErrorCodeEnum;
+import com.dwellsmart.constants.ErrorCode;
 import com.dwellsmart.dto.request.AccountTransactionRequest;
 import com.dwellsmart.entity.Account;
 import com.dwellsmart.entity.AccountTransaction;
@@ -74,9 +74,7 @@ public class AccountTransactionService implements IAccountTransactionService {
 	public void processTransaction(AccountTransactionRequest transactionRequest) {
 		if (!TransactionModeMapper.getAvailableModes(transactionRequest.getTransactionType())
 				.contains(transactionRequest.getTransactionMode())) {
-			throw new ApplicationException(HttpStatus.BAD_REQUEST,
-					ErrorCodeEnum.INVALID_TRANSACTION_MODE.getErrorCode(),
-					ErrorCodeEnum.INVALID_TRANSACTION_MODE.getErrorMessage());
+			throw new ApplicationException(ErrorCode.INVALID_TRANSACTION_MODE);
 		}
 		// yah pr resident ko nikalo
 		Resident r = null;

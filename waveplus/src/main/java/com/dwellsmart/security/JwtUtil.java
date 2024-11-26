@@ -2,10 +2,13 @@ package com.dwellsmart.security;
 
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 
@@ -13,6 +16,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+
+import com.dwellsmart.constants.Constants;
+import com.dwellsmart.constants.ErrorCode;
+import com.dwellsmart.constants.RoleType;
+import com.dwellsmart.entity.User;
+import com.dwellsmart.exception.ApplicationException;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -32,24 +41,24 @@ public class JwtUtil {
 
 	@Value("${app.jwt.expiration}")
 	private long expiration;
-	
+
 	public String generateSecureRefreshToken() {
-	    SecureRandom secureRandom = new SecureRandom(); // Secure random number generator
-	    byte[] token = new byte[24]; // 24 bytes = 192 bits
-	    secureRandom.nextBytes(token); 
-	    return Base64.getUrlEncoder().withoutPadding().encodeToString(token); // URL safe Base64 encoded string
+		SecureRandom secureRandom = new SecureRandom(); // Secure random number generator
+		byte[] token = new byte[24]; // 24 bytes = 192 bits
+		secureRandom.nextBytes(token);
+		return Base64.getUrlEncoder().withoutPadding().encodeToString(token); // URL safe Base64 encoded string
 	}
 
-	public String generateToken(UserDetails userDetails) {
+	public String generateToken(UserDetails userDetails, String deviceId) {
 
-		// Extract role from UserDetails
-		String role = "USER"; // Default role if none found
-		for (GrantedAuthority authority : userDetails.getAuthorities()) {
-			role = authority.getAuthority(); // Assuming there is only one role
-			break; // Exit loop after the first role
+		List<String> authorityNames = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+				.collect(Collectors.toList());
+
+		if (authorityNames.isEmpty()) {
+			authorityNames = Collections.singletonList(RoleType.USER.name()); // Create a list with default role
 		}
 
-		Map<String, Object> claims = Map.of("role", role);
+		Map<String, Object> claims = Map.ofEntries(Map.entry("role", authorityNames), Map.entry("deviceId", deviceId));
 
 		return createToken(claims, userDetails.getUsername());
 	}
@@ -58,10 +67,10 @@ public class JwtUtil {
 		return Keys.hmacShaKeyFor(Decoders.BASE64.decode(key));
 	}
 
-	private String createToken(Map<String, Object> claims, String sub) {
+	private String createToken(Map<String, Object> claims, String username) {
 		String jti = UUID.randomUUID().toString(); // Generate a unique identifier for jti
 
-		return Jwts.builder().claims(claims).id(jti).issuer("DwellSMART pvt. ltd.").subject(sub)
+		return Jwts.builder().claims(claims).id(jti).issuer(Constants.COMPANY_NAME).subject(username)
 				.issuedAt(new Date(System.currentTimeMillis()))
 				.expiration(new Date(System.currentTimeMillis() + expiration * 1000))
 				.signWith(this.getSecretKey(secretString)).compact();
@@ -72,14 +81,24 @@ public class JwtUtil {
 		return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
 	}
 
+//	public boolean validateToken(String token, User user) {
+//		final String username = extractUsername(token);
+//		return (username.equals(user.getUsername()) && !isTokenExpired(token));
+//	}
+
 	public String extractUsername(String token) {
 		return extractClaim(token, Claims::getSubject);
+	}
+
+	public String extractDeviceId(String token) {
+		final Claims claims = extractAllClaims(token);
+		return claims.get("deviceId", String.class);
 	}
 
 	public Date extractExpiration(String token) {
 		return extractClaim(token, Claims::getExpiration);
 	}
-	
+
 	private boolean isTokenExpired(String token) {
 		return extractExpiration(token).before(new Date());
 	}
@@ -93,29 +112,23 @@ public class JwtUtil {
 		try {
 			Claims claims = Jwts.parser().verifyWith(this.getSecretKey(secretString)).build().parseSignedClaims(token)
 					.getPayload();
-			if (claims.getIssuer() == null || !claims.getIssuer().equals("DwellSMART pvt. ltd.")) {
-				throw new RuntimeException("Invalid issuer");
+			if (claims.getIssuer() == null || !claims.getIssuer().equals(Constants.COMPANY_NAME)) {
+				throw new ApplicationException(ErrorCode.INVALID_ISSUER);
 			}
-
 			return claims;
 		} catch (ExpiredJwtException e) {
-			// Handle expired token
-			throw new RuntimeException("Token has expired", e);
+			throw new ApplicationException(ErrorCode.TOKEN_EXPIRED);
 		} catch (PrematureJwtException e) {
-			// Handle token used before nbf date
-			throw new RuntimeException("Token is not yet valid", e);
+			throw new ApplicationException(ErrorCode.TOKEN_NOT_YET_VALID);
 		} catch (UnsupportedJwtException e) {
-			throw new RuntimeException("Unsupported token.", e);
+			throw new ApplicationException(ErrorCode.UNSUPPORTED_TOKEN);
 		} catch (MalformedJwtException e) {
-			throw new RuntimeException("Malformed token.", e);
+			throw new ApplicationException(ErrorCode.MALFORMED_TOKEN);
 		} catch (SignatureException e) {
-			throw new RuntimeException("Invalid token signature.", e);
+			throw new ApplicationException(ErrorCode.INVALID_SIGNATURE);
 		} catch (Exception e) {
-			// Handle other possible exceptions
-			throw new RuntimeException("Invalid token", e);
+			throw new ApplicationException(ErrorCode.INVALID_TOKEN);
 		}
-
 	}
-
 
 }

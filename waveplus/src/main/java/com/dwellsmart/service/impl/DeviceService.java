@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import com.dwellsmart.dto.DeviceDTO;
 import com.dwellsmart.entity.Device;
 import com.dwellsmart.entity.User;
-import com.dwellsmart.exception.ApplicationException;
 import com.dwellsmart.repository.DeviceRepository;
 import com.dwellsmart.repository.UserRepository;
 import com.dwellsmart.service.IDeviceService;
@@ -33,7 +32,7 @@ public class DeviceService implements IDeviceService {
 
 	@Autowired
 	private ObjectMapper objectMapper;
-	
+
 	@Transactional
 	public void manageDevice(DeviceDTO deviceDTO) {
 
@@ -44,6 +43,7 @@ public class DeviceService implements IDeviceService {
 
 			// Find the user by username
 			if (deviceDTO.getUsername() != null) {
+				System.out.println("Device Save for the User:" + deviceDTO.getUsername());
 				User user = userRepository.findByUsername(deviceDTO.getUsername())
 						.orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
@@ -82,15 +82,13 @@ public class DeviceService implements IDeviceService {
 					device.setLoginDate(deviceDTO.getLoginDate());
 					device.setRevoked(deviceDTO.isRevoked());
 					device.setUser(user);
-					
-					
 
 					// Save the updated device
 					deviceRepository.save(device);
 				}
 
 			} else {
-				throw new ApplicationException("User is mandatory for mobile devices");
+//				throw new ApplicationException("User is mandatory for mobile devices");
 			}
 
 		} else { // Logout Request
@@ -101,7 +99,7 @@ public class DeviceService implements IDeviceService {
 				device.setRevoked(deviceDTO.isRevoked()); // Mark the device as revoked
 				deviceRepository.save(device);
 			} else {
-				throw new ApplicationException("Device not found for revoking");
+//				throw new ApplicationException("Device not found for revoking");
 			}
 		}
 	}
@@ -142,6 +140,7 @@ public class DeviceService implements IDeviceService {
 	}
 
 	@Override
+	@Transactional
 	public Optional<DeviceDTO> getDeviceByDeviceId(String deviceId) {
 
 		// Fetch the device by deviceId

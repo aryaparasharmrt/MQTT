@@ -29,6 +29,8 @@ public class DailyChargesScheduler {
 
 		List<Project> allProjects = projectService.getAllProjects();
 		for (Project project : allProjects) {
+			
+		 if (project.getActiveStatus() && project.getAutomaticBillingEnabled()) {
 
 			List<Resident> activeResidents = residentService.getActiveResidentsByProjectId(project.getProjectId());
 //			activeResidents.forEach(dailyChargesService::processResidentDailyCharges);
@@ -37,6 +39,7 @@ public class DailyChargesScheduler {
 //				residentService.saveResident(processResidentDailyCharges);
 			}
 		}
+		 }
 	}
 
 	private List<Integer> fetchAllAccountIds() {

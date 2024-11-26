@@ -6,25 +6,24 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import com.dwellsmart.constants.RoleType;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -70,22 +69,24 @@ public class User {
 	private LocalDateTime createdAt;
 
 	@UpdateTimestamp
-	@Column(nullable = false)
+	@Column(nullable = false)  //,insertable = false
 	private LocalDateTime updatedAt;
 
 //	@ElementCollection(targetClass = Role.class) // Defines a collection of Role enums that will be stored in a separate table
 	
 //	@Enumerated(EnumType.STRING) 
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)  // orphanRemoval = true -> think later
+	@OneToMany(mappedBy = "user", fetch = FetchType.EAGER)  // orphanRemoval = true ,  cascade = CascadeType.ALL, think later
 	@Builder.Default
 	private Set<Role> roles = new HashSet<>(); // Default initialization
 	
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)  // orphanRemoval = true
+	@OneToMany(mappedBy = "user",fetch = FetchType.LAZY)  // orphanRemoval = true //, cascade = CascadeType.ALL 
 	@JsonManagedReference
+	@BatchSize(size = 5)  // 10 devices per query
 	private Set<Device> devices;
 	
-    // One-to-One relationship with Resident
-    @OneToOne(mappedBy = "user",fetch = FetchType.LAZY)
+//     One-to-One relationship with Resident
+    @OneToOne(mappedBy = "user",fetch = FetchType.LAZY )//, optional = false think later , cascade = CascadeType.PERSIST / ALL think later
+    @NotFound(action = NotFoundAction.IGNORE)  // Ignore if Resident is missing
     private Resident resident;
     
     @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)

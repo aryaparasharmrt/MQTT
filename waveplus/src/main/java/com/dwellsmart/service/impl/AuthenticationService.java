@@ -1,6 +1,7 @@
 package com.dwellsmart.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
+import com.dwellsmart.constants.ErrorCode;
 import com.dwellsmart.dto.DeviceDTO;
 import com.dwellsmart.dto.request.AuthRequest;
 import com.dwellsmart.dto.request.RefreshTokenOrLogoutRequest;
@@ -36,15 +38,14 @@ public class AuthenticationService implements IAuthenticationService {
 
 	private final IDeviceService deviceService;
 	private final UserDetailsService userDetailsService;
-	
-	
-	 @Autowired
-	    private HttpServletRequest request;
 
-	    public String getCustomField() {
-	        // Fetch custom field from the request attribute
-	        return (String) request.getAttribute("customField");
-	    }
+	@Autowired
+	private HttpServletRequest request;
+
+	public String getCustomField() {
+		// Fetch custom field from the request attribute
+		return (String) request.getAttribute("customField");
+	}
 
 //	public AuthenticationResponse register(RegisterRequest request) {
 //		var user = User.builder().firstname(request.getFirstname()).lastname(request.getLastname())
@@ -59,7 +60,6 @@ public class AuthenticationService implements IAuthenticationService {
 
 	@Override
 	public AuthResponse authenticate(AuthRequest loginRequest) {
-
 		try {
 			// Authenticate the user
 			Authentication authentication = authenticationManager.authenticate(
@@ -70,30 +70,17 @@ public class AuthenticationService implements IAuthenticationService {
 
 			// Retrieve user details from the authentication object
 			var userDetails = (UserDetails) authentication.getPrincipal();
-			
-			List<GrantedAuthority> filteredAuthorities = authentication.getAuthorities().stream()
-			        .collect(Collectors.toList());
-
-			    // Create a new Authentication token with only the active role
-//			    Authentication newAuth = new UsernamePasswordAuthenticationToken(
-//			        authentication.getPrincipal(),
-//			        authentication.getCredentials(),
-//			        filteredAuthorities
-//			    );
 
 			// Generate JWT token using user details
-			final var jwtToken = jwtUtil.generateToken(userDetails);
+			final var jwtToken = jwtUtil.generateToken(userDetails, loginRequest.getDeviceId());
 			final String secureRefreshToken = jwtUtil.generateSecureRefreshToken();
 
 			DeviceDTO deviceDTO = DeviceDTO.builder().deviceId(loginRequest.getDeviceId())
-					.deviceType(loginRequest.getDeviceType())
-					.revoked(false)
-					.tokenCreatedAt(LocalDateTime.now())
+					.deviceType(loginRequest.getDeviceType()).revoked(false).tokenCreatedAt(LocalDateTime.now())
 //		                .OS(loginRequest.getOs())
 //		                .version(loginRequest.getVersion())
 					.refreshToken(secureRefreshToken).loginDate(LocalDateTime.now())
-					.username(loginRequest.getUsername())
-					.build();
+					.username(loginRequest.getUsername()).build();
 
 			deviceService.manageDevice(deviceDTO);
 
@@ -102,7 +89,7 @@ public class AuthenticationService implements IAuthenticationService {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new ApplicationException("Authentication failed", e);  //custom application exception
+			throw new ApplicationException(ErrorCode.AUTHENTICATION_FAILED); 
 		}
 
 	}
@@ -111,14 +98,12 @@ public class AuthenticationService implements IAuthenticationService {
 	public AuthResponse refreshToken(RefreshTokenOrLogoutRequest tokenRequest) {
 
 		DeviceDTO deviceDTO = deviceService
-				.getDeviceByDeviceIdAndRefToken(tokenRequest.getDeviceId(), tokenRequest.getRefreshToken())
-				.orElseThrow(() -> new ApplicationException("Invalid Refresh Token or Device Id."));
+				.getDeviceByDeviceIdAndRefToken(tokenRequest.getDeviceId(), tokenRequest.getRefreshToken()).orElseThrow(
+						() -> new ApplicationException(ErrorCode.INVALID_REFRESH_TOKEN_OR_DEVICE_ID));
 
-		// Assuming the 'User' entity implements 'UserDetails', or you can convert it to
-		// 'UserDetails'
-		UserDetails userDetails = userDetailsService.loadUserByUsername(deviceDTO.getUsername());
+		var userDetails = userDetailsService.loadUserByUsername(deviceDTO.getUsername());
 
-		final String newAccessToken = jwtUtil.generateToken(userDetails);
+		final String newAccessToken = jwtUtil.generateToken(userDetails,tokenRequest.getDeviceId());
 
 		final String secureRefreshToken = jwtUtil.generateSecureRefreshToken();
 
@@ -137,13 +122,12 @@ public class AuthenticationService implements IAuthenticationService {
 	public String logout(RefreshTokenOrLogoutRequest logoutRequest) {
 		
 		DeviceDTO deviceDTO = deviceService.getDeviceByDeviceIdAndRefToken(logoutRequest.getDeviceId(),logoutRequest.getRefreshToken())
-			    .orElseThrow(() -> new ApplicationException("Invalid Refresh Token or Device Id."));
+			    .orElseThrow(() -> new ApplicationException(ErrorCode.INVALID_REFRESH_TOKEN_OR_DEVICE_ID));
 		
 		 deviceDTO.setRevoked(true);
 		 deviceService.manageDevice(deviceDTO);
 		return "Logout Successful";
 	}
-
 
 //
 //	private void revokeAllUserTokens(User user) {

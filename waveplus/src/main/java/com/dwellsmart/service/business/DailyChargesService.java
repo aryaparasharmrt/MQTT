@@ -53,10 +53,11 @@ public class DailyChargesService {
 	    }
 
 	    // Step 2: Fetch the meter_ref_id from the resident to get DG and Grid readings
-	    String meterRefId = resident.getMeterRefId();
-	    if (meterRefId == null) {
-	        throw new RuntimeException("Meter reference ID is missing for resident.");
-	    }
+//	    String meterRefId = resident.getMeterRefId();
+	    String meterRefId = null;
+//	    if (meterRefId == null) {
+//	        throw new RuntimeException("Meter reference ID is missing for resident.");
+//	    }
 
 	    // Call external service to get meter readings for DG and Grid (assumed method call)
 	    ReadingResponse meterReadings = meterFeignClient.getMeterReading(meterRefId); // Implement the microservice call
@@ -94,6 +95,7 @@ public class DailyChargesService {
 
 	    // Step 6: Persist the changes using EntityManager (assumed to be available in the class)
 //	    entityManager.persist(accountTransaction);
+	    accountTransactionService.createTransaction(accountTransaction);
 	    
 	    return resident;
 	}

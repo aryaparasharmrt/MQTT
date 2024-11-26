@@ -1,5 +1,8 @@
 package com.dwellsmart.security.configuration;
 
+import static com.dwellsmart.constants.Endpoints.BASE;
+import static com.dwellsmart.constants.Endpoints.MANAGEMENT;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -7,8 +10,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import static com.dwellsmart.constants.Endpoints.*;
 import com.dwellsmart.security.JwtAuthenticationFilter;
 import com.dwellsmart.security.UnAuthorizedHandler;
 
@@ -36,6 +41,19 @@ public class SecurityConfig {
 //		source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
 //		return source;
 //	}
+	
+	 @Bean
+	    public CorsConfigurationSource corsConfigurationSource() {
+	        CorsConfiguration config = new CorsConfiguration();
+	        config.setAllowCredentials(true);
+	        config.addAllowedOrigin("http://localhost:3000");  // Allowed domain
+	        config.addAllowedHeader("*");
+	        config.addAllowedMethod("*");
+
+	        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+	        source.registerCorsConfiguration("/**", config);
+	        return source;
+	    }
 
 
 	@Bean

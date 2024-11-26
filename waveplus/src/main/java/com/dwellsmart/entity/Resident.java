@@ -15,6 +15,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -58,9 +59,6 @@ public class Resident {
 	@Column(nullable = false)
 	private Long flatArea;
 
-	@Column(length = 40)
-	private String meterRefId;   
-
 	@Column(length = 20)
 	private String occupancyType;
 
@@ -75,12 +73,21 @@ public class Resident {
 	@Column(nullable = false)
 	@Builder.Default
 	private Boolean isActive = true;
+	
+	@Column(nullable = false)
+	@Builder.Default
+	private Boolean isFlatVacant = false;
 
 	@OneToOne(fetch = FetchType.LAZY) //, cascade = CascadeType.ALL
 	@Basic(optional = false)
 	@JoinColumn(name = "user_id", nullable = false) // referencedColumnName = "username", insertable = false, updatable
 	private User user; // = false -> we will discuss later
 
+	@OneToOne(fetch = FetchType.LAZY) //, cascade = CascadeType.ALL
+	@Basic(optional = false)
+	@JoinColumn(name = "meter_map_id") //, nullable = false
+	private MeterMap metermap;
+	
 	@ManyToOne(fetch = FetchType.LAZY)  //cascade = CascadeType.ALL
 	@Basic(optional = false)
 	@JoinColumn(name = "project_id", nullable = false)
@@ -90,8 +97,9 @@ public class Resident {
 	@JoinColumn(name = "site_id", nullable = false)
 	private Site site;
 
-	@OneToOne(mappedBy = "resident", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@OneToOne(mappedBy = "resident") // fetch = FetchType.LAZY,  not working ,cascade = CascadeType.ALL think later for casecade operation
 	private Account account;
+	
 
 	// One-to-One relationship with Resident
 //	@OneToMany(mappedBy = "resident",fetch = FetchType.LAZY,cascade = CascadeType.ALL)

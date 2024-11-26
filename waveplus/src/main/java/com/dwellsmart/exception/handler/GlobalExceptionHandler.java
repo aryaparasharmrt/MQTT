@@ -13,7 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import com.dwellsmart.constants.ErrorCodeEnum;
+import com.dwellsmart.constants.ErrorCode;
 import com.dwellsmart.dto.response.ResponseError;
 import com.dwellsmart.exception.ApplicationException;
 
@@ -90,8 +90,8 @@ public class GlobalExceptionHandler {
 //		LogMessage.log(LOGGER, " generic exception message is -> " + ex.getMessage());
 //		LogMessage.logException(LOGGER, ex);
 		ex.printStackTrace();
-		ResponseError responseError = ResponseError.builder().errorCode(ErrorCodeEnum.GENERIC_EXCEPTION.getErrorCode())
-				.errorMessage(ErrorCodeEnum.GENERIC_EXCEPTION.getErrorMessage()).build();
+		ResponseError responseError = ResponseError.builder().errorCode(ErrorCode.GENERIC_EXCEPTION.getErrorCode())
+				.errorMessage(ErrorCode.GENERIC_EXCEPTION.getErrorMessage()).build();
 //		LogMessage.log(LOGGER, " paymentResponse is -> " + paymentResponse);
 		return new ResponseEntity<>(responseError, HttpStatus.INTERNAL_SERVER_ERROR);
 	}

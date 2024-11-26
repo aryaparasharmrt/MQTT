@@ -145,17 +145,21 @@ public class Project {
 	private LocalDateTime updatedAt;
 
 	// One-to-many relationship with Site
-	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  //orphanRemoval = true
+	@OneToMany(mappedBy = "project", fetch = FetchType.LAZY)  //orphanRemoval = true  // cascade = CascadeType.ALL, think later
 	@Builder.Default
     private List<Site> sites = new ArrayList<>();
 
 	// One-to-Many relationship with User_Roles
-	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "project", fetch = FetchType.LAZY) //, cascade = CascadeType.ALL
 	private Set<Role> roles;
 	
 	// One-to-Many relationship with Resident
     @OneToMany(mappedBy = "project",fetch = FetchType.LAZY)
     private List<Resident> residents;
+    
+	// One-to-Many relationship with MeterMap
+	@OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
+	private List<MeterMap> metermaps;
     
     
     @OneToMany(mappedBy = "project",fetch = FetchType.LAZY)

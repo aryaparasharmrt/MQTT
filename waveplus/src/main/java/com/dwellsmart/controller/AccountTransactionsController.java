@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dwellsmart.constants.Endpoints;
-import com.dwellsmart.constants.ErrorCodeEnum;
+import com.dwellsmart.constants.ErrorCode;
 import com.dwellsmart.constants.TransactionMode;
 import com.dwellsmart.constants.TransactionType;
 import com.dwellsmart.dto.request.AccountTransactionRequest;
@@ -61,9 +61,7 @@ public class AccountTransactionsController {
 		if ((transactionRequest.getTransactionType() == TransactionType.CREDIT
 				|| transactionRequest.getTransactionType() == TransactionType.DEBIT)
 				&& transactionRequest.getTransactionMode() != TransactionMode.MANUAL) {
-			throw new ApplicationException(HttpStatus.BAD_REQUEST,
-					ErrorCodeEnum.INVALID_TRANSACTION_MODE_FOR_CREDIT_OR_DEBIT.getErrorCode(),
-					ErrorCodeEnum.INVALID_TRANSACTION_MODE_FOR_CREDIT_OR_DEBIT.getErrorMessage());
+			throw new ApplicationException(ErrorCode.INVALID_TRANSACTION_MODE_FOR_CREDIT_OR_DEBIT);
 		}
 
 //		Already logic implement in trasaction mode mapper class check only for auto mode 

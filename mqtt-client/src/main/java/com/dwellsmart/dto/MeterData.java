@@ -2,20 +2,31 @@ package com.dwellsmart.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MeterData {
 
 	private boolean status;
 
-	private Double ebLoad;
-	private Double dgLoad;
+	private Short meterId;  //For setting new meterId
+	
+	private Double ebLoad;//
+	private Double dgLoad;//
 	private Double gridReading;
 	private Double dgReading;
 
-	private String serialNo;
+	private String serialNo;//
 	private String relayStatus;
 	private String firmwareVersion;
 	private String opMode;

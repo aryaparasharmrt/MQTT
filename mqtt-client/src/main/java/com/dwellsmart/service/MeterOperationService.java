@@ -3,10 +3,11 @@ package com.dwellsmart.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.dwellsmart.constants.OperationCode;
+import com.dwellsmart.constants.OperationType;
 import com.dwellsmart.dto.MeterData;
 import com.dwellsmart.dto.MeterInfo;
 import com.dwellsmart.dto.MeterOperationPayload;
+import com.dwellsmart.exception.ApplicationException;
 import com.dwellsmart.factory.MeterFactory;
 import com.dwellsmart.modbus.IMeter;
 
@@ -21,98 +22,89 @@ public class MeterOperationService {
 	@Autowired
 	private MeterFactory meterFactory;
 
-	private void processMeter(MeterInfo meter, OperationCode opCode) {
-		// Your processing logic here...
-		System.out.println("Processing meter " + meter.getMeterId() + " with operation: " + opCode);
-	}
-
-	public MeterOperationPayload processOperation(MeterOperationPayload request) {
+	public void processOperation(MeterOperationPayload request) {
 		RTUTCPMasterConnection connection = new RTUTCPMasterConnection();
-		OperationCode operationCode = request.getOpCode();
+		OperationType operationCode = request.getOpType();
 		try {
-			connection = modbusService.getConnectionToModbusServer(request.getIpAddress());
+//			connection = modbusService.getConnectionToModbusServer(request.getIpAddress());
+			request.setIpStatus(connection.isConnected());
+			
 
-			for (MeterInfo meter : request.getMeters()) {
+			for (MeterInfo meterInfo : request.getMeters()) {
+				MeterData data = meterInfo.getData();
+				IMeter meter = meterFactory.getMeter(meterInfo.getMetersTypeId(), meterInfo.getMeterId(), connection);
 
 				switch (operationCode) {
 				case W_LOAD:
 				case W_PP:
 					// Validate that the data object is present and `ebLoad` is not null
-					if (meter.getData() == null || meter.getData().getEbLoad() == null) {
-						throw new IllegalArgumentException("Data is required for operation: " + operationCode);
+					if (meterInfo.getData() == null || meterInfo.getData().getEbLoad() == null) {
+						throw new ApplicationException("Data is required for operation: " + operationCode);
+					}
+					break;
+
+				case W_ID:
+					if (meterInfo.getData() == null || meterInfo.getData().getMeterId() == null) {
+						throw new ApplicationException("Data is required for operation: " + operationCode);
+					}
+					boolean isSuccess = meter.setUnitId(meterInfo.getData().getMeterId());
+					meterInfo.getData().setStatus(isSuccess);
+
+					break;
+
+				case DISCONNECT:
+					if (data != null) {
+						meterInfo.getData().setStatus(meter.disconnect());
+					} else {
+						meterInfo.setData(MeterData.builder().status(meter.disconnect()).build());
 					}
 					break;
 
 				case CONNECT:
-				case DISCONNECT:
-					// Validate that the data object should not be present
-					if (meter.getData() != null) {
-						throw new IllegalArgumentException(
-								"Data should not be present for operation: " + operationCode);
-					}
-
-					MeterData data = meter.getData();
 					if (data != null) {
-
-						this.handleConnectOperation(meter, connection);
+						meterInfo.getData().setStatus(meter.connect());
 					} else {
-						MeterData dataObject = new MeterData();
-						meter.setData(dataObject);
-						this.handleConnectOperation(meter, connection);
+						meterInfo.setData(MeterData.builder().status(meter.connect()).build());
 					}
-
 					break;
 
 				case READ:
-					this.handleReadOperation(meter, connection);
+					meterInfo.setData(meter.readMeter());
 					break;
 
 				default:
-					throw new UnsupportedOperationException("Unsupported operation: " + operationCode);
+					throw new ApplicationException("Unsupported operation: " + operationCode);
 				}
-
-				// Process the meter object
-				processMeter(meter, operationCode);
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new ApplicationException("Unable to process operation");
 		} finally {
 			if (connection.isConnected()) {
 				connection.close();
 			}
 
 		}
-		return request;
 
 	}
 
-	private void handleReadOperation(MeterInfo info, RTUTCPMasterConnection connection) {
-		System.out.println("Performing READ operation on meters...");
-		System.out.println("Reading data from Meter: " + info.getMetersTypeId() + ", Meter ID: " + info.getMeterId());
+//	private void handleReadOperation(MeterInfo info, RTUTCPMasterConnection connection) {
+//		System.out.println("Performing READ operation on meters...");
+//		System.out.println("Reading data from Meter: " + info.getMetersTypeId() + ", Meter ID: " + info.getMeterId());
+//		
+//	}
+//
+//	private void handleConnectOperation(MeterInfo info, RTUTCPMasterConnection connection) {
+//		System.out.println("Performing CONNECT operation on meters...");
+//		System.out.println("Connecting Meter: " + info.getMetersTypeId() + ", Meter ID: " + info.getMeterId());
+//
+//	}
 
-		IMeter meter = meterFactory.getMeter(info.getMetersTypeId(), info.getMeterId(), connection);
-		info.setData(meter.readMeter());
-	}
-
-	private void handleConnectOperation(MeterInfo info, RTUTCPMasterConnection connection) {
-		System.out.println("Performing CONNECT operation on meters...");
-		System.out.println("Connecting Meter: " + info.getMetersTypeId() + ", Meter ID: " + info.getMeterId());
-
-		IMeter meter = meterFactory.getMeter(info.getMetersTypeId(), info.getMeterId(), connection);
-		info.getData().setStatus(meter.connect());
-
-	}
-
-//	private void handleDisconnectOperation(MeterOperationPayload request, RTUTCPMasterConnection connection) {
+//	private void handleDisconnectOperation(MeterInfo info, RTUTCPMasterConnection connection) {
 //		System.out.println("Performing DISCONNECT operation on meters...");
-//		for (MeterInfo meterRequest : request.getMeterRequests()) {
-//			System.out.println("Disconnecting Meter: " + meterRequest.getMeterTypeId() + ", Slave ID: "
-//					+ meterRequest.getSlaveId());
-//			
-//			IMeter meter = meterFactory.getMeter(meterRequest.getMeterTypeId(), meterRequest.getSlaveId(), connection);
-//			boolean connect = meter.disconnect();
-//			// Add your disconnect logic here
-//		}
+//		System.out.println("Disconnecting Meter: " + info.getMetersTypeId() + ", Meter ID: " + info.getMeterId());
+//
+//		
 //	}
 }

@@ -33,7 +33,7 @@ public class AuthenticationController {
 				authReq.setDeviceId(UUID.randomUUID().toString().replace("-", ""));
 			}
 		}
-		else throw new ApplicationException("Bad Request : Device Type only 'WEB/AND/IOS' Allowed");
+//		else throw new ApplicationException("Bad Request : Device Type only 'WEB/AND/IOS' Allowed");
 	}
 
 	@PostMapping(TOKEN)
@@ -42,7 +42,7 @@ public class AuthenticationController {
 		if (Constants.CLIENT_AND.equalsIgnoreCase(loginRequest.getDeviceType())
 				|| Constants.CLIENT_IOS.equalsIgnoreCase(loginRequest.getDeviceType())) {
 			if (loginRequest.getDeviceId() == null || loginRequest.getDeviceId().isEmpty()) {
-				throw new ApplicationException("Device Id is manadenroy for MOB clients");
+//				throw new ApplicationException("Device Id is manadenroy for MOB clients");
 			}
 		} else
 			this.generateDeviceIdIfWeb(loginRequest);

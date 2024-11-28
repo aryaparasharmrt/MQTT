@@ -1,5 +1,6 @@
 package com.dwellsmart.constants;
 
+import com.dwellsmart.exception.ApplicationException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -29,7 +30,7 @@ public enum MeterType {
 				return type;
 			}
 		}
-		throw new IllegalArgumentException("Invalid meterTypeId: " + id);
+		throw new ApplicationException(null , "Invalid meterTypeId: " + id);
 	}
 
 //	// Method to find MeterType by ID

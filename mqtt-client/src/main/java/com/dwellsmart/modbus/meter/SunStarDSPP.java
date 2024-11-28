@@ -12,13 +12,15 @@ import com.dwellsmart.pojo.MeterAddressMap;
 
 import net.wimpi.modbus.msg.ReadMultipleRegistersResponse;
 import net.wimpi.modbus.net.RTUTCPMasterConnection;
+import net.wimpi.modbus.procimg.Register;
+import net.wimpi.modbus.procimg.SimpleRegister;
 
-public class SunStarDS extends SunStar {
+public class SunStarDSPP extends SunStar {
 
-	public SunStarDS(short meterId, MeterAddressMap addressMap, RTUTCPMasterConnection connection) {
+	public SunStarDSPP(short meterId, MeterAddressMap addressMap, RTUTCPMasterConnection connection) {
 		super(meterId, addressMap, connection);
 	}
-	
+
 	@Override
 	public MeterData readMeter() {
 
@@ -188,7 +190,6 @@ public class SunStarDS extends SunStar {
 
 		return meterReading;
 	}
-	
 
 	@Override
 	public boolean setUnitId(Short unitId) {
@@ -201,20 +202,93 @@ public class SunStarDS extends SunStar {
 		// TODO Auto-generated method stub
 		return false;
 	}
+	
+	@Override
+	public boolean connect() {
 
-	public boolean resetDefaultPassword() {
-		// TODO Auto-generated method stub
+		MeterData meter = this.readMeter();
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		String serialNo = meter.getSerialNo();
+		boolean protectionMode = this.enableProtectionMode(serialNo);
+		if (protectionMode) {
+			return super.connect();
+		}
 		return false;
+
+	}
+	
+	@Override
+	public boolean disconnect() {
+
+		MeterData meter = this.readMeter();
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		String serialNo = meter.getSerialNo();
+		boolean protectionMode = this.enableProtectionMode(serialNo);
+		if (protectionMode) {
+			return super.disconnect();
+		}
+		return false;
+
 	}
 
-	public boolean setUpProtectedMode() {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
-	public boolean factoryReset() {
-		// TODO Auto-generated method stub
+	private boolean enableProtectionMode(String serialNo) {
+		if (null != serialNo && !serialNo.equalsIgnoreCase("")) {
+			Register[] serialPassword = serialToPasswordRegisters(Integer.parseInt(serialNo));
+
+			return modbusService.writeMultipleRegistersRequest(meterId, addressMap.getValidatorRegisterAddress(),
+					serialPassword, connection);
+
+		}
 		return false;
+
 	}
+	
+	public static Register[] serialToPasswordRegisters(int serial) {
+        String numberString = String.valueOf(serial); // Replace this with your 8-digit number as a string
+        while (numberString.length() < 8) {
+            numberString = "0" + numberString;
+        }
+
+        System.out.println("Number is " + numberString);
+        // Extract the 6 least significant digits
+        String lsbDigits = numberString.substring(2);
+
+        Register[] registers = new Register[lsbDigits.length() / 2];
+        int registerIndex = 0;
+        // Convert each digit to a character and print its ASCII value
+        for (int i = 0; i < lsbDigits.length(); i += 2) {
+            char firstDigit = lsbDigits.charAt(i);
+            char secondDigit = (i + 1 < lsbDigits.length()) ? lsbDigits.charAt(i + 1) : '0';
+
+            char firstChar = (char) (firstDigit + 'A' - '0');
+            char secondChar = (char) (secondDigit + 'A' - '0');
+
+            String asciiHex = Integer.toHexString((int) firstChar) + Integer.toHexString((int) secondChar);
+            int asciiDecimal = Integer.parseInt(asciiHex, 16);
+
+            System.out.println("Pair " + (i / 2 + 1) + " being " + firstChar + secondChar
+                    + ", hex number " + asciiHex + " becomes " + asciiDecimal);
+            Register register = new SimpleRegister(asciiDecimal);
+
+            // Add the Register object to the array
+            registers[registerIndex] = register;
+            registerIndex++;
+        }
+        return registers;
+
+    }
 
 }

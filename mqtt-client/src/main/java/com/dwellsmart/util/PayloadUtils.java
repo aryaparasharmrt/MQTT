@@ -7,9 +7,8 @@ import org.springframework.stereotype.Service;
 import com.dwellsmart.constants.ErrorCode;
 import com.dwellsmart.dto.MeterOperationPayload;
 import com.dwellsmart.exception.ApplicationException;
-import com.fasterxml.jackson.core.JsonParseException;
+import com.dwellsmart.exception.ConstraintViolationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.validation.ConstraintViolation;
@@ -39,6 +38,7 @@ public class PayloadUtils {
 			throw new ApplicationException(ErrorCode.INVALID_JSON, message);
 		}
 
+		//If request is map with meteroperationpayload then send error message in this payload itself
 		Set<ConstraintViolation<MeterOperationPayload>> violations = validator.validate(request);
 
 		if (!violations.isEmpty()) {
@@ -56,7 +56,8 @@ public class PayloadUtils {
 				break;
 			}
 
-			throw new ApplicationException(ErrorCode.MISSING_FIELD); // "Validation failed: \n" + errorMessages
+			//this validation failed then set error messages in request payload
+			throw new ConstraintViolationException("Validation failed: \n" + errorMessages); // "Validation failed: \n" + errorMessages
 		}
 
 		return request;

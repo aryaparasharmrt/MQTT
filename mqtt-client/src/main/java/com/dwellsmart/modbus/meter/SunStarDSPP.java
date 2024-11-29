@@ -15,7 +15,15 @@ import net.wimpi.modbus.net.RTUTCPMasterConnection;
 import net.wimpi.modbus.procimg.Register;
 import net.wimpi.modbus.procimg.SimpleRegister;
 
-public class SunStarDSPP extends SunStar {
+
+/**
+ * This class represents a Sunstar Meter which is manufacturer for DwellSMART pvt. ltd. 
+ * the version of this meter is <b>9.5</b> and have password protected functionality.
+ * 
+ * 
+ * @author Anshul Goyal
+ */
+public class SunStarDSPP extends Meter {
 
 	public SunStarDSPP(short meterId, MeterAddressMap addressMap, RTUTCPMasterConnection connection) {
 		super(meterId, addressMap, connection);
@@ -35,11 +43,11 @@ public class SunStarDSPP extends SunStar {
 
 				ByteArrayOutputStream outputStreamEBLoad = new ByteArrayOutputStream();
 				outputStreamEBLoad.write(res.getRegister(6).toBytes());
-				meterReading.setEbLoad(new BigInteger(1, outputStreamEBLoad.toByteArray()).doubleValue());
+				meterReading.setEbLoad(new BigInteger(1, outputStreamEBLoad.toByteArray()).doubleValue() / 100);
 
 				ByteArrayOutputStream outputStreamDGLoad = new ByteArrayOutputStream();
 				outputStreamDGLoad.write(res.getRegister(8).toBytes());
-				meterReading.setDgLoad(new BigInteger(1, outputStreamDGLoad.toByteArray()).doubleValue());
+				meterReading.setDgLoad(new BigInteger(1, outputStreamDGLoad.toByteArray()).doubleValue() / 100);
 
 				ByteArrayOutputStream outputStreamMode = new ByteArrayOutputStream();
 				outputStreamMode.write(res.getRegister(12).toBytes()[0]);
@@ -193,14 +201,43 @@ public class SunStarDSPP extends SunStar {
 
 	@Override
 	public boolean setUnitId(Short unitId) {
-		// TODO Auto-generated method stub
-		return false;
+		
+         String hexString = Integer.toHexString(unitId);
+         
+         //Step 1: Append "AA" to the hexadecimal string
+         hexString += "AA";
+
+         Register changeMeterIdRegister = new SimpleRegister(Integer.parseInt(hexString,16));
+         
+         boolean isSuccess = modbusService.writeMultipleRegistersRequest(meterId,addressMap.getChangeMeterIdAddress() ,connection,changeMeterIdRegister);
+         
+		return isSuccess;
 	}
 
 	@Override
 	public boolean setLoad(Double ebLoad, Double dgLoad) {
-		// TODO Auto-generated method stub
+
+		MeterData meter = this.readMeter();
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		String serialNo = meter.getSerialNo();
+		boolean protectionMode = this.enableProtectionMode(serialNo);
+		if (protectionMode) {
+
+			Register ebLoadReg = new SimpleRegister(ebLoad.intValue() * 100);
+			Register dgLoadReg = new SimpleRegister(dgLoad.intValue() * 100);
+
+			return modbusService.writeMultipleRegistersRequest(meterId, addressMap.getLoadRegisterAddress(), connection,
+					ebLoadReg, dgLoadReg);
+
+		}
 		return false;
+
 	}
 	
 	@Override
@@ -246,17 +283,17 @@ public class SunStarDSPP extends SunStar {
 
 	private boolean enableProtectionMode(String serialNo) {
 		if (null != serialNo && !serialNo.equalsIgnoreCase("")) {
-			Register[] serialPassword = serialToPasswordRegisters(Integer.parseInt(serialNo));
+			Register[] serialPassword = SunStarDSPP.serialToPasswordRegisters(Integer.parseInt(serialNo));
 
 			return modbusService.writeMultipleRegistersRequest(meterId, addressMap.getValidatorRegisterAddress(),
-					serialPassword, connection);
+					connection,serialPassword );
 
 		}
 		return false;
 
 	}
 	
-	public static Register[] serialToPasswordRegisters(int serial) {
+	private static Register[] serialToPasswordRegisters(int serial) {
         String numberString = String.valueOf(serial); // Replace this with your 8-digit number as a string
         while (numberString.length() < 8) {
             numberString = "0" + numberString;

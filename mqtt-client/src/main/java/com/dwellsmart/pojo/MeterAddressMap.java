@@ -24,6 +24,7 @@ public class MeterAddressMap {
 	private int passwordRegisterAddress;
 	private int validatorRegisterAddress;
 	private int ebdgRegisterAddress;
+	private int changeMeterIdAddress;
 	private int ebValue;
 	private int dgValue;
 

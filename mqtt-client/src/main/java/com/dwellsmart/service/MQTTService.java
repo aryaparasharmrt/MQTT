@@ -46,6 +46,7 @@ public class MQTTService {
 			connection.subscribe(SUBSCRIBE_TOPIC, QualityOfService.AT_LEAST_ONCE, message -> {
 
 				String jsonPayload = new String(message.getPayload(), StandardCharsets.UTF_8);
+				System.out.println("JSON payload: \n" + jsonPayload);
 				byte[] response = null;
 
 				try {
@@ -53,22 +54,29 @@ public class MQTTService {
 
 					//Main Functionality:
 					meterOperationService.processOperation(operationPayload);
+					
+					System.out.println("Operation payload: \n" + operationPayload);
 
 					response = payloadUtils.convertToResponseAsBytes(operationPayload);
 
 				} catch (ApplicationException e) {
+					System.out.println("Application Exception: " + e.getMessage());
 					e.printStackTrace();  // TODO for logging errorsS
 					ResponseError responseError = ResponseError.builder().errorCode(e.getCode())
 							.errorMessage(e.getMessage()).build();
+					
+					System.out.println("Response Error: \n" + responseError);
 					response = payloadUtils.convertToResponseAsBytes(responseError);
 				} catch (Exception e) {
 					e.printStackTrace();
 					ResponseError responseError = ResponseError.builder()
 							.errorCode(ErrorCode.GENERIC_EXCEPTION.getErrorCode())
 							.errorMessage(ErrorCode.GENERIC_EXCEPTION.getErrorMessage()).build();
+					System.out.println("Response Error: \n" + responseError);
 					response = payloadUtils.convertToResponseAsBytes(responseError);
 				}
 
+				
 				connection.publish(new MqttMessage(PUBLISH_TOPIC, response, QualityOfService.AT_LEAST_ONCE, false));
 				System.out.println("Response sent to topic: " + PUBLISH_TOPIC);// TODO for logging
 

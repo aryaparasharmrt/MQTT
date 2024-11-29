@@ -10,7 +10,7 @@ import net.wimpi.modbus.net.RTUTCPMasterConnection;
 import net.wimpi.modbus.procimg.Register;
 import net.wimpi.modbus.procimg.SimpleRegister;
 
-public abstract class SunStar implements IMeter {
+public abstract class Meter implements IMeter {
 
 	protected final short meterId;
 	protected final MeterAddressMap addressMap;
@@ -19,7 +19,7 @@ public abstract class SunStar implements IMeter {
 	@Autowired
 	protected ModbusService modbusService;
 
-	public SunStar(short meterId, MeterAddressMap addressMap, RTUTCPMasterConnection connection) {
+	public Meter(short meterId, MeterAddressMap addressMap, RTUTCPMasterConnection connection) {
 		this.meterId = meterId;
 		this.addressMap = addressMap;
 		this.connection = connection;
@@ -27,14 +27,14 @@ public abstract class SunStar implements IMeter {
 
 	@Override
 	public boolean connect() {
-		return modbusService.writeMultipleRegistersRequest(meterId, addressMap.getConnectRegisterAddress(),
-				new Register[] { new SimpleRegister(addressMap.getConnectRegisterValue()) }, connection);
+		return modbusService.writeMultipleRegistersRequest(meterId, addressMap.getConnectRegisterAddress(), connection,
+				new SimpleRegister(addressMap.getConnectRegisterValue()));
 	}
 
 	@Override
 	public boolean disconnect() {
 		return modbusService.writeMultipleRegistersRequest(meterId, addressMap.getDisconnectRegisterAddress(),
-				new Register[] { new SimpleRegister(addressMap.getDisconnectRegisterValue()) }, connection);
+				connection, new SimpleRegister(addressMap.getDisconnectRegisterValue()));
 	}
 
 }

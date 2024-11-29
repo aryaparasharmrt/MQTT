@@ -11,6 +11,6 @@ public final class MQTTConstants {
 	public static final String PUBLISH_TOPIC = "sdk/modbus/response/2";
 	public static final String CLIENT_ID = "basestation2";
 	
-	public static final int MAX_RETRIES = 2; 
+	public static final int MAX_RETRIES = 1; 
 
 }

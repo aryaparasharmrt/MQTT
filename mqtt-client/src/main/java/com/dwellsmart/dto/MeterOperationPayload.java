@@ -29,6 +29,8 @@ public class MeterOperationPayload {
 	private String ipAddress;
 
 	private boolean ipStatus;
+	
+	private String message;
 
 	@NotNull
 	@Size(min = 1)

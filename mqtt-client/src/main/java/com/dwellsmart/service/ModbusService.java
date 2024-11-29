@@ -1,13 +1,14 @@
 package com.dwellsmart.service;
 
+import static com.dwellsmart.constants.MQTTConstants.MAX_RETRIES;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.springframework.stereotype.Service;
 
-import static com.dwellsmart.constants.MQTTConstants.*;
-
+import lombok.extern.slf4j.Slf4j;
 import net.wimpi.modbus.ModbusException;
 import net.wimpi.modbus.io.ModbusRTUTCPTransaction;
 import net.wimpi.modbus.msg.ReadInputRegistersRequest;
@@ -20,6 +21,7 @@ import net.wimpi.modbus.net.RTUTCPMasterConnection;
 import net.wimpi.modbus.procimg.Register;
 
 @Service
+@Slf4j
 public class ModbusService {
 
 
@@ -121,8 +123,8 @@ public class ModbusService {
 		return null; // Return null if all attempts fail
 	}
 
-	public boolean writeMultipleRegistersRequest( short slaveId,int registerRef, Register[] registers,
-			RTUTCPMasterConnection masterConnection) {
+	public boolean writeMultipleRegistersRequest( short slaveId,int registerRef, 
+			RTUTCPMasterConnection masterConnection, Register... registers) {
 		if (slaveId < 0 || slaveId > 256) {
 			throw new IllegalArgumentException("Invalid input parameters");
 		}
@@ -195,5 +197,39 @@ public class ModbusService {
 //	        logger.log(Level.INFO, "Method Exit getConnectionToModbusServer at ..." + System.currentTimeMillis());
 		return con;
 	}
+
+//	logger.info("Attempting to connect to Modbus server at " + inetAddress + ":" + port);
+//	logger.severe("Connection failed: " + e.getMessage());
+
+	
+	public RTUTCPMasterConnection getConnectionToModbusServer1(String conAddress) throws Exception {
+	    if (conAddress == null || !conAddress.contains(":")) {
+	        throw new IllegalArgumentException("Connection address must be in the format IP:PORT");
+	    }
+
+	    int idx = conAddress.indexOf(':');
+	    String inetAddress = conAddress.substring(0, idx);
+	    int port = Integer.parseInt(conAddress.substring(idx + 1));
+
+	    if (port < 1 || port > 65535) {
+	        throw new IllegalArgumentException("Port number must be between 1 and 65535");
+	    }
+
+	    RTUTCPMasterConnection con = null;
+	    try {
+	        InetAddress addr = InetAddress.getByName(inetAddress);
+	        con = new RTUTCPMasterConnection(addr, port);
+	        con.connect();
+	        log.info("Connection established to " + inetAddress + " on port " + port);
+	    } catch (UnknownHostException e) {
+	        log.error("Invalid IP address: " + inetAddress);
+	        throw new Exception("Invalid IP address: " + inetAddress, e);
+	    } catch (IOException e) {
+	        log.error("Unable to connect to " + inetAddress + ":" + port);
+	        throw new Exception("Unable to connect to " + inetAddress + ":" + port, e);
+	    }
+	    return con;
+	}
+
 
 }

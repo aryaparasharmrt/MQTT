@@ -13,7 +13,7 @@ import com.dwellsmart.pojo.MeterAddressMap;
 import net.wimpi.modbus.msg.ReadMultipleRegistersResponse;
 import net.wimpi.modbus.net.RTUTCPMasterConnection;
 
-public class SunStarDS extends SunStar {
+public class SunStarDS extends Meter {
 
 	public SunStarDS(short meterId, MeterAddressMap addressMap, RTUTCPMasterConnection connection) {
 		super(meterId, addressMap, connection);

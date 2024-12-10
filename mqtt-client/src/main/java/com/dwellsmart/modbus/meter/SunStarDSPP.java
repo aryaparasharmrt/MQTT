@@ -10,6 +10,7 @@ import java.util.List;
 import com.dwellsmart.dto.MeterData;
 import com.dwellsmart.pojo.MeterAddressMap;
 
+import lombok.extern.slf4j.Slf4j;
 import net.wimpi.modbus.msg.ReadMultipleRegistersResponse;
 import net.wimpi.modbus.net.RTUTCPMasterConnection;
 import net.wimpi.modbus.procimg.Register;
@@ -23,6 +24,7 @@ import net.wimpi.modbus.procimg.SimpleRegister;
  * 
  * @author Anshul Goyal
  */
+@Slf4j
 public class SunStarDSPP extends Meter {
 
 	public SunStarDSPP(short meterId, MeterAddressMap addressMap, RTUTCPMasterConnection connection) {
@@ -209,9 +211,9 @@ public class SunStarDSPP extends Meter {
 
          Register changeMeterIdRegister = new SimpleRegister(Integer.parseInt(hexString,16));
          
-         boolean isSuccess = modbusService.writeMultipleRegistersRequest(meterId,addressMap.getChangeMeterIdAddress() ,connection,changeMeterIdRegister);
+         return modbusService.writeMultipleRegistersRequest(meterId,addressMap.getChangeMeterIdAddress() ,connection,changeMeterIdRegister);
          
-		return isSuccess;
+		
 	}
 
 	@Override
@@ -226,17 +228,15 @@ public class SunStarDSPP extends Meter {
 		}
 
 		String serialNo = meter.getSerialNo();
-		boolean protectionMode = this.enableProtectionMode(serialNo);
-		if (protectionMode) {
+		boolean isProtectionModeEnabled = this.enableProtectionMode(serialNo);
+		if (isProtectionModeEnabled) {
 
 			Register ebLoadReg = new SimpleRegister(ebLoad.intValue() * 100);
 			Register dgLoadReg = new SimpleRegister(dgLoad.intValue() * 100);
 
-			return modbusService.writeMultipleRegistersRequest(meterId, addressMap.getLoadRegisterAddress(), connection,
-					ebLoadReg, dgLoadReg);
-
+			return super.setLoad(ebLoadReg, dgLoadReg);
 		}
-		return false;
+		return isProtectionModeEnabled;
 
 	}
 	
@@ -252,11 +252,17 @@ public class SunStarDSPP extends Meter {
 		}
 
 		String serialNo = meter.getSerialNo();
-		boolean protectionMode = this.enableProtectionMode(serialNo);
-		if (protectionMode) {
+		String relayStatus = meter.getRelayStatus(); //For confirmation of meter on or off
+		if (relayStatus != null && relayStatus.equals("ON")) {
+			log.info("Relay status is already ON for this meter serial number: " + serialNo);
+			return true;
+		}
+		
+		boolean isProtectionModeEnabled = this.enableProtectionMode(serialNo);
+		if (isProtectionModeEnabled) {
 			return super.connect();
 		}
-		return false;
+		return isProtectionModeEnabled;
 
 	}
 	
@@ -270,23 +276,28 @@ public class SunStarDSPP extends Meter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 		String serialNo = meter.getSerialNo();
-		boolean protectionMode = this.enableProtectionMode(serialNo);
-		if (protectionMode) {
+		String relayStatus = meter.getRelayStatus(); //For confirmation of meter on or off
+		if (relayStatus != null && relayStatus.equals("OFF")) {
+			log.info("Relay status is already OFF for this meter serial number: " + serialNo);
+			return true;
+		}
+
+		boolean isProtectionModeEnabled = this.enableProtectionMode(serialNo);
+		if (isProtectionModeEnabled) {
 			return super.disconnect();
 		}
-		return false;
+		return isProtectionModeEnabled;
 
 	}
 
 
 	private boolean enableProtectionMode(String serialNo) {
 		if (null != serialNo && !serialNo.equalsIgnoreCase("")) {
-			Register[] serialPassword = SunStarDSPP.serialToPasswordRegisters(Integer.parseInt(serialNo));
+			Register[] serialPasswordRegister = SunStarDSPP.serialToPasswordRegisters(Integer.parseInt(serialNo));
 
 			return modbusService.writeMultipleRegistersRequest(meterId, addressMap.getValidatorRegisterAddress(),
-					connection,serialPassword );
+					connection,serialPasswordRegister);
 
 		}
 		return false;

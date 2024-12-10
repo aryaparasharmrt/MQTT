@@ -1,5 +1,10 @@
 package com.dwellsmart.service;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,26 +26,42 @@ public class MeterOperationService {
 
 	@Autowired
 	private MeterFactory meterFactory;
+	
+
 
 	public void processOperation(MeterOperationPayload request) {
 		RTUTCPMasterConnection connection = new RTUTCPMasterConnection();
-		OperationType operationCode = request.getOpType();
+		OperationType operationType = request.getOpType();
 		boolean isSuccess = false;
 		try {
 			connection = modbusService.getConnectionToModbusServer(request.getIpAddress());
-			request.setIpStatus(connection.isConnected());
+			request.setIpStatus(connection != null && connection.isConnected());
+	        if (!connection.isConnected()) {
+	            request.setMessage("Connection to server failed");
+	            request.setMeters(null);
+	            return;
+	        }
 
-			for (MeterInfo meterInfo : request.getMeters()) {
+			List<MeterInfo> meterInfos = request.getMeters();
+			for (MeterInfo meterInfo : meterInfos) {
 				MeterData meterData = meterInfo.getData();
 				IMeter meter = meterFactory.getMeter(meterInfo.getMetersTypeId(), meterInfo.getMeterId(), connection);
 
-				switch (operationCode) {
+				if (meter == null) {
+					meterInfo.setData(MeterData.builder().status(false).build());
+					continue;
+				}
+				switch (operationType) {
 				case W_PP:
 
+					break;
 				case W_LOAD:
+					if (meterInfos.size() > 1) {
+						throw new ApplicationException("At a time only one meter allow to process this operation");
+					}
 					// Validate that the data object is present and `ebLoad` is not null
 					if (meterData == null || meterData.getEbLoad() == null) {
-						throw new ApplicationException("Data is required for operation: " + operationCode);
+						throw new ApplicationException("Data is required for operation: " + operationType);
 					}
 
 					isSuccess = meter.setLoad(meterData.getEbLoad(), meterData.getDgLoad());
@@ -50,7 +71,7 @@ public class MeterOperationService {
 
 				case W_ID:
 					if (meterInfo.getData() == null || meterInfo.getData().getMeterId() == null) {
-						throw new ApplicationException("Data is required for operation: " + operationCode);
+						throw new ApplicationException("Data is required for operation: " + operationType);
 					}
 					isSuccess = meter.setUnitId(meterInfo.getData().getMeterId());
 					meterData.setStatus(isSuccess);
@@ -58,6 +79,9 @@ public class MeterOperationService {
 					break;
 
 				case DISCONNECT:
+					if(meterInfos.size()>1) {
+						throw new ApplicationException("At a time only one meter allow to process this operation");
+					}
 					if (meterData != null) {
 						meterData.setStatus(meter.disconnect());
 					} else {
@@ -74,23 +98,24 @@ public class MeterOperationService {
 					break;
 
 				case READ:
-					meterInfo.setData(meter.readMeter());
+					MeterData data = Optional.ofNullable(meter.readMeter())
+							.orElse(MeterData.builder().status(false).build());
+					meterInfo.setData(data);
 					break;
 
 				default:
-					throw new ApplicationException("Unsupported operation: " + operationCode);
+					throw new ApplicationException("Unsupported operation: " + operationType);
 				}
-			}
 
+			}
 		} catch (Exception e) {
-			request.setMessage(e.getMessage());
+//			request.setMessage(e.getMessage());
 			e.printStackTrace();
-			throw new ApplicationException("Unable to process operation");
+			throw new ApplicationException("Unable to process operation: "+e.getMessage());
 		} finally {
-			if (connection.isConnected()) {
+			if (connection != null && connection.isConnected()) {
 				connection.close();
 			}
-
 		}
 
 	}

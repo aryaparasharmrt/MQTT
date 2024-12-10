@@ -36,5 +36,38 @@ public abstract class Meter implements IMeter {
 		return modbusService.writeMultipleRegistersRequest(meterId, addressMap.getDisconnectRegisterAddress(),
 				connection, new SimpleRegister(addressMap.getDisconnectRegisterValue()));
 	}
+	
+	
+	@Override
+	public boolean setLoad(Double ebLoad, Double dgLoad) {
+
+		Register ebLoadReg = new SimpleRegister(ebLoad.intValue());
+		Register dgLoadReg = new SimpleRegister(dgLoad.intValue());
+
+		return modbusService.writeMultipleRegistersRequest(meterId, addressMap.getLoadRegisterAddress(), connection,
+				ebLoadReg, dgLoadReg);
+	}
+
+	public boolean setLoad(Register... registers) {
+		return modbusService.writeMultipleRegistersRequest(meterId, addressMap.getLoadRegisterAddress(), connection,
+				registers);
+	}
+	
+	
+//	public boolean resetDefaultPassword() {
+//		// TODO Auto-generated method stub
+//		return false;
+//	}
+//
+//	public boolean setUpProtectedMode() {
+//		// TODO Auto-generated method stub
+//		return false;
+//	}
+//
+//	public boolean factoryReset() {
+//		// TODO Auto-generated method stub
+//		return false;
+//	}
+
 
 }

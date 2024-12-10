@@ -1,35 +1,47 @@
 package com.dwellsmart.service;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.dwellsmart.constants.MQTTConstants;
 import com.dwellsmart.constants.MeterType;
 import com.dwellsmart.pojo.MeterAddressMap;
 
+import lombok.extern.slf4j.Slf4j;
 import net.wimpi.modbus.net.RTUTCPMasterConnection;
 
 @Service
+@Slf4j
 public class CacheService {
+
 	
-//	@Autowired
-//	private ModbusService modbusService;
+	 // Max cache size limit
+    private final int MAX_CACHE_SIZE = 5000;
+    
+    // Cache expiry duration (6 hours in milliseconds)
+    private final long EXPIRY_DURATION = 6 * 60 * 60 * 1000;  // 6 hours in milliseconds
 
 	private final Map<MeterType, MeterAddressMap> meterAddressMapCache = new ConcurrentHashMap<>();
-	
-	
-	 private final Map<String, RTUTCPMasterConnection> masterConnectionCache = new ConcurrentHashMap<>();
 
-	    public RTUTCPMasterConnection getRTUTCPMasterConnection(String ipAddress) {
-	        return masterConnectionCache.computeIfAbsent(ipAddress, this::createConnection);
-	    }
+	private final Map<String, RTUTCPMasterConnection> masterConnectionCache = new ConcurrentHashMap<>();
+	
+	// Cache to store message ID and timestamp
+    private final ConcurrentHashMap<String, Instant> messageIdCache = new ConcurrentHashMap<>();
+    
 
-	    private RTUTCPMasterConnection createConnection(String ipAddress) {
-	    	
+	public RTUTCPMasterConnection getRTUTCPMasterConnection(String ipAddress) {
+		return masterConnectionCache.computeIfAbsent(ipAddress, this::createConnection);
+	}
+
+	private RTUTCPMasterConnection createConnection(String ipAddress) {
+
 //	    	modbusService.getConnectionToModbusServer(ipAddress);
-	        return null;
+		return null;
 //	        try {
 //	            // Create a new Modbus connection
 //	            ModbusConnection connection = new ModbusConnection(ipAddress);
@@ -38,8 +50,45 @@ public class CacheService {
 //	        } catch (Exception e) {
 //	            throw new RuntimeException("Failed to connect to IP: " + ipAddress, e);
 //	        }
-	    }
-	    
+	}
+	
+	/**
+     * Validates if the message ID can be processed based on the 10-minute rule.
+     * @param messageId The message ID to validate.
+     * @return true if the message ID is valid for processing, false otherwise.
+     */
+    public boolean isValid(String messageId) {
+    	 // If cache exceeds max size, remove old entries (older than 6 hours)
+        if (messageIdCache.size() >= MAX_CACHE_SIZE) {
+            removeOldestEntry();
+        }
+       
+        Instant currentTimestamp = Instant.now();
+
+        if (messageIdCache.containsKey(messageId)) {
+            Instant lastTimestamp = messageIdCache.get(messageId);
+            if (Duration.between(lastTimestamp, currentTimestamp).compareTo(MQTTConstants.MESSAGE_VALIDITY_DURATION) < 0) {
+                return false; // Reject if within validity period
+            }
+        }
+
+        // Update or add the message ID with the current timestamp
+        messageIdCache.put(messageId, currentTimestamp);
+        return true;
+    }
+
+	// Remove entries older than 6 hours
+    private void removeOldestEntry() {
+        long now = System.currentTimeMillis();
+        Iterator<Map.Entry<String, Instant>> iterator = messageIdCache.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, Instant> entry = iterator.next();
+            // Check if the entry is older than 6 hours
+            if (now - entry.getValue().toEpochMilli() > EXPIRY_DURATION) {
+                iterator.remove(); // Remove the expired entry
+            }
+        }
+    }
 
 	// Method to get the meter address map based on meter type
 	public MeterAddressMap getMeterAddressMap(MeterType meterType) {
@@ -102,6 +151,10 @@ public class CacheService {
 			addressMap.setOverloadattemptsRegAddress(49);
 			addressMap.setOverloadattemptsdelayRegAddress(51);
 			return addressMap;
+			
+		default:
+			log.warn("There in no address map available");
+			break;
 		}
 		return addressMap;
 	}

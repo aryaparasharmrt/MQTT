@@ -172,22 +172,23 @@ public class ModbusService {
 		return false;
 	}
 
-	public RTUTCPMasterConnection getConnectionToModbusServer(String conAddress)
-			throws UnknownHostException, NumberFormatException, IOException, Exception {
+	public RTUTCPMasterConnection getConnectionToModbusServer(String conAddress) {
 //	        logger.log(Level.INFO, "Method Entry getConnectionToModbusServer at ..." + System.currentTimeMillis());
-		RTUTCPMasterConnection con = new RTUTCPMasterConnection();
-		int port;
-		String inetAddress = conAddress;
-		int idx = inetAddress.indexOf(':');
-		if (idx > 0) {
-			port = Integer.parseInt(inetAddress.substring(idx + 1));
-			inetAddress = inetAddress.substring(0, idx);
-			InetAddress addr = InetAddress.getByName(inetAddress);
-			// Open the connection
-			con = new RTUTCPMasterConnection(addr, port);
-			con.connect();
-			System.out.println("Connection established...");
-		}
+		RTUTCPMasterConnection con = null;
+		try {
+
+			int port;
+			String inetAddress = conAddress;
+			int idx = inetAddress.indexOf(':');
+			if (idx > 0) {
+				port = Integer.parseInt(inetAddress.substring(idx + 1));
+				inetAddress = inetAddress.substring(0, idx);
+				InetAddress addr = InetAddress.getByName(inetAddress);
+				// Open the connection
+				con = new RTUTCPMasterConnection(addr, port);
+				con.connect();
+				System.out.println("Connection established...");
+			}
 //	        else {
 //	            serverSocket = singletonSocketServer.getServerSocketforPort(conAddress);
 ////	            startServer(Integer.parseInt(conAddress));
@@ -195,6 +196,10 @@ public class ModbusService {
 //	            con.getConnection(serverSocket);
 //	        }
 //	        logger.log(Level.INFO, "Method Exit getConnectionToModbusServer at ..." + System.currentTimeMillis());
+		} catch (Exception e) {
+			e.printStackTrace();
+			con = new RTUTCPMasterConnection(); 
+		}
 		return con;
 	}
 

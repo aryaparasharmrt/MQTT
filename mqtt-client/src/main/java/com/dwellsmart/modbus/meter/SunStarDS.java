@@ -10,9 +10,13 @@ import java.util.List;
 import com.dwellsmart.dto.MeterData;
 import com.dwellsmart.pojo.MeterAddressMap;
 
+import lombok.extern.slf4j.Slf4j;
 import net.wimpi.modbus.msg.ReadMultipleRegistersResponse;
 import net.wimpi.modbus.net.RTUTCPMasterConnection;
+import net.wimpi.modbus.procimg.Register;
+import net.wimpi.modbus.procimg.SimpleRegister;
 
+@Slf4j
 public class SunStarDS extends Meter {
 
 	public SunStarDS(short meterId, MeterAddressMap addressMap, RTUTCPMasterConnection connection) {
@@ -192,29 +196,17 @@ public class SunStarDS extends Meter {
 
 	@Override
 	public boolean setUnitId(Short unitId) {
-		// TODO Auto-generated method stub
+		log.warn("this method not implemented");
 		return false;
 	}
 
 	@Override
 	public boolean setLoad(Double ebLoad, Double dgLoad) {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
-	public boolean resetDefaultPassword() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+		Register ebLoadReg = new SimpleRegister(ebLoad.intValue() * 100);
+		Register dgLoadReg = new SimpleRegister(dgLoad.intValue() * 100);
 
-	public boolean setUpProtectedMode() {
-		// TODO Auto-generated method stub
-		return false;
+		return super.setLoad(ebLoadReg, dgLoadReg);
 	}
-
-	public boolean factoryReset() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
+	
 }

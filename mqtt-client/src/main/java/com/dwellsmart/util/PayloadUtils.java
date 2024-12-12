@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import com.dwellsmart.constants.ErrorCode;
 import com.dwellsmart.dto.MeterOperationPayload;
 import com.dwellsmart.exception.ApplicationException;
-import com.dwellsmart.exception.ConstraintViolationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -16,8 +15,10 @@ import jakarta.validation.Path;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class PayloadUtils {
 
 	private final ObjectMapper objectMapper;
@@ -29,16 +30,17 @@ public class PayloadUtils {
 		this.validator = factory.getValidator();
 	}
 
-	public MeterOperationPayload validateRequest(String jsonRequest) throws ApplicationException {
+	public MeterOperationPayload validateRequest(String payload) throws ApplicationException {
 		MeterOperationPayload request;
 		try {
-			request = objectMapper.readValue(jsonRequest, MeterOperationPayload.class);
+			request = objectMapper.readValue(payload, MeterOperationPayload.class);
 		} catch (JsonProcessingException e) {
+			log.error("Error processing payload: " + payload);
 			String message = this.optimizeJsonErrorMessage(e.getOriginalMessage());
 			throw new ApplicationException(ErrorCode.INVALID_JSON, message);
 		}
 		
-		System.out.println("Request passed successfully.."+request);
+		log.debug("Request passed successfully.."+request);
 
 		Set<ConstraintViolation<MeterOperationPayload>> violations = validator.validate(request);
 
@@ -67,7 +69,7 @@ public class PayloadUtils {
 
 		try {
 			String asString = objectMapper.writeValueAsString(obj);
-			System.out.println("this is response as string: \n" + asString);
+			log.debug("Response as string: \n" + asString);
 			return objectMapper.writeValueAsBytes(obj);
 		} catch (JsonProcessingException e) {
 			throw new ApplicationException(ErrorCode.GENERIC_EXCEPTION);

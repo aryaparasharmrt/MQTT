@@ -1,109 +1,83 @@
 package com.dwellsmart.service;
 
 import static com.dwellsmart.constants.MQTTConstants.CLIENT_ID;
-import static com.dwellsmart.constants.MQTTConstants.PUBLISH_TOPIC;
-import static com.dwellsmart.constants.MQTTConstants.SUBSCRIBE_TOPIC;
+import static com.dwellsmart.constants.MQTTConstants.*;
 
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ExecutionException;
+import java.time.LocalDateTime;
+import java.util.concurrent.CompletableFuture;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.dwellsmart.constants.ErrorCode;
-import com.dwellsmart.dto.MeterOperationPayload;
-import com.dwellsmart.dto.ResponseError;
 import com.dwellsmart.exception.ApplicationException;
 import com.dwellsmart.mqtt.MQTTConnection;
-import com.dwellsmart.util.PayloadUtils;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.crt.mqtt.MqttClientConnection;
-import software.amazon.awssdk.crt.mqtt.MqttException;
 import software.amazon.awssdk.crt.mqtt.MqttMessage;
 import software.amazon.awssdk.crt.mqtt.QualityOfService;
 
 @Component
+@Slf4j
 public class MQTTService {
 
-	@Autowired
-	private PayloadUtils payloadUtils;
-
-	@Autowired
-	private MeterOperationService meterOperationService;
-
+	private final PoolManager manager ;
+	
 	private final MqttClientConnection connection = MQTTConnection.createMqttConnection(CLIENT_ID);
-
-	@Autowired
-	private CacheService cacheService;
-
+	
+	public MQTTService(PoolManager manager) {
+		this.manager = manager;
+	}
+	
 	@PostConstruct
 	public void init() {
+		this.connect();
+		this.defaultSubscribe();
+	}
+	
+	public void defaultPublish(byte ...response) {
+		connection.publish(new MqttMessage(DEFAULT_PUBLISH_TOPIC, response, QualityOfService.AT_LEAST_ONCE, false));
+		log.info("Response sent to default topic: " + DEFAULT_PUBLISH_TOPIC);// TODO for logging
+	}
 
+	
+	private void connect() {
+		CompletableFuture<Boolean> connected = connection.connect();
 		try {
-			connection.connect().get();
-			System.out.println("Connected to AWS IoT Core!"); // TODO for logging
-
-			// Subscribe
-			connection.subscribe(SUBSCRIBE_TOPIC, QualityOfService.AT_LEAST_ONCE, message -> {
-
-				String jsonPayload = new String(message.getPayload(), StandardCharsets.UTF_8);
-				System.out.println("JSON payload: \n" + jsonPayload);
-				byte[] response = null;
-
-				try {
-					MeterOperationPayload operationPayload = payloadUtils.validateRequest(jsonPayload);
-
-					// Validate message ID
-					if (!cacheService.isValid(operationPayload.getMessageId())) {
-						throw new ApplicationException("Duplicate message id request rejected within 10 minutes");
-					}
-
-					// Main Functionality:
-					meterOperationService.processOperation(operationPayload);
-
-					System.out.println("Operation payload: \n" + operationPayload);
-
-					response = payloadUtils.convertToResponseAsBytes(operationPayload);
-
-				} catch (ApplicationException e) {
-					System.out.println("Application Exception: " + e.getMessage());
-					e.printStackTrace(); // TODO for logging errorsS
-					ResponseError responseError = ResponseError.builder().errorCode(e.getCode())
-							.errorMessage(e.getMessage()).build();
-
-					System.out.println("Response Error: \n" + responseError);
-					response = payloadUtils.convertToResponseAsBytes(responseError);
-
-				} catch (Exception e) {
-					e.printStackTrace();
-					ResponseError responseError = ResponseError.builder()
-							.errorCode(ErrorCode.GENERIC_EXCEPTION.getErrorCode())
-							.errorMessage(ErrorCode.GENERIC_EXCEPTION.getErrorMessage()).build();
-					System.out.println("Response Error: \n" + responseError);
-					response = payloadUtils.convertToResponseAsBytes(responseError);
-				}
-
-				connection.publish(new MqttMessage(PUBLISH_TOPIC, response, QualityOfService.AT_LEAST_ONCE, false));
-				System.out.println("Response sent to topic: " + PUBLISH_TOPIC);// TODO for logging
-
-			}).get();
-
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
-		} catch (MqttException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
+			boolean sessionPresent = connected.get();
+			log.info("Connected to " + (!sessionPresent ? "new" : "existing") + " session!");
+		} catch (Exception ex) {
+			throw new ApplicationException("Exception occurred during connect: \n" + ex);
 		}
 
+	}
+	
+	private void defaultSubscribe() {
+		connection.subscribe(DEFAULT_SUBSCRIBE_TOPIC, QualityOfService.AT_LEAST_ONCE, message -> {
+			log.info("Request Received Timestamp: " + LocalDateTime.now());
+			String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
+
+			// Process the payload
+			manager.processPayload(payload, this);
+		});
+		log.info("Subscribed to default topic: " + DEFAULT_SUBSCRIBE_TOPIC);
 	}
 
 	@PreDestroy
 	public void cleanup() {
-		connection.disconnect();
-		System.out.println("Connection closed");
+		// Disconnect
+//        CompletableFuture<Void> disconnected = connection.disconnect();
+//        try {
+//			disconnected.get();
+//		} catch (InterruptedException | ExecutionException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+
+        connection.close();
+		log.info("Connection closed");
 	}
 
 }

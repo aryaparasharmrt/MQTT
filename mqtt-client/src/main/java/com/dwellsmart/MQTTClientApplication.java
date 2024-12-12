@@ -3,13 +3,16 @@ package com.dwellsmart;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import lombok.extern.slf4j.Slf4j;
+
 @SpringBootApplication
+@Slf4j
 public class MQTTClientApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(MQTTClientApplication.class, args);
 		
-		System.out.println("Application Started...."); //TODO for logger
+		log.info("Application Started...."); //TODO for logger
 
 		synchronized (MQTTClientApplication.class) {
 			try {

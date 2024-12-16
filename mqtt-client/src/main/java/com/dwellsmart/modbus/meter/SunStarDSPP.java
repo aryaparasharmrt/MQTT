@@ -25,7 +25,7 @@ import net.wimpi.modbus.procimg.SimpleRegister;
  * @author Anshul Goyal
  */
 @Slf4j
-public class SunStarDSPP extends Meter {
+public class SunStarDSPP extends AbstractMeter {
 
 	public SunStarDSPP(short meterId, MeterAddressMap addressMap, RTUTCPMasterConnection connection) {
 		super(meterId, addressMap, connection);

@@ -26,24 +26,13 @@ public enum MeterType {
 	}
 
 	@JsonCreator
-	public static MeterType fromId(int id) {
+	public static MeterType fromId(int id) {  // Method to find MeterType by ID
 		for (MeterType type : MeterType.values()) {
 			if (type.id == id) {
 				return type;
 			}
 		}
-//		throw new ApplicationException(null , "Invalid meterTypeId: " + id);
 		log.warn("Invalid MeterType ID received: {}", id);
 	    return MeterType.UNKNOWN; 
 	}
-
-//	// Method to find MeterType by ID
-//	public static MeterType getById(int id) {
-//		for (MeterType type : MeterType.values()) {
-//			if (type.getId() == id) {
-//				return type;
-//			}
-//		}
-//		throw new IllegalArgumentException("Invalid meterTypeId: " + id);
-//	}
 }

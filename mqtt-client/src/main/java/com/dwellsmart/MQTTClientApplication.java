@@ -12,7 +12,7 @@ public class MQTTClientApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(MQTTClientApplication.class, args);
 		
-		log.info("Application Started...."); //TODO for logger
+		log.info("Application Started....");
 
 		synchronized (MQTTClientApplication.class) {
 			try {

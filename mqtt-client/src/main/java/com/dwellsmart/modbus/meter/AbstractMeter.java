@@ -10,7 +10,7 @@ import net.wimpi.modbus.net.RTUTCPMasterConnection;
 import net.wimpi.modbus.procimg.Register;
 import net.wimpi.modbus.procimg.SimpleRegister;
 
-public abstract class Meter implements IMeter {
+public abstract class AbstractMeter implements IMeter {
 
 	protected final short meterId;
 	protected final MeterAddressMap addressMap;
@@ -19,7 +19,7 @@ public abstract class Meter implements IMeter {
 	@Autowired
 	protected ModbusService modbusService;
 
-	public Meter(short meterId, MeterAddressMap addressMap, RTUTCPMasterConnection connection) {
+	public AbstractMeter(short meterId, MeterAddressMap addressMap, RTUTCPMasterConnection connection) {
 		this.meterId = meterId;
 		this.addressMap = addressMap;
 		this.connection = connection;
@@ -48,7 +48,7 @@ public abstract class Meter implements IMeter {
 				ebLoadReg, dgLoadReg);
 	}
 
-	public boolean setLoad(Register... registers) {
+	protected boolean setLoad(Register... registers) {
 		return modbusService.writeMultipleRegistersRequest(meterId, addressMap.getLoadRegisterAddress(), connection,
 				registers);
 	}

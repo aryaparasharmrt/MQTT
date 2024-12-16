@@ -1,9 +1,7 @@
 package com.dwellsmart.service;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,7 +45,6 @@ public class MeterOperationService {
 				MeterData meterData = meterInfo.getData();
 				IMeter meter = meterFactory.getMeter(meterInfo.getMetersTypeId(), meterInfo.getMeterId(), connection);
 
-//				Thread.sleep(60000); //TODO: remove this
 				if (meter == null) {
 					meterInfo.setData(MeterData.builder().status(false).build());
 					continue;
@@ -57,9 +54,9 @@ public class MeterOperationService {
 
 					break;
 				case W_LOAD:
-//					if (meterInfos.size() > 1) {
-//						throw new ApplicationException("At a time only one meter allow to process this operation");
-//					} //we wil think later for this operation
+					if (meterInfos.size() > 1) {
+						throw new ApplicationException("At a time only one meter allow to process this operation");
+					} //we wil think later for this operation
 					// Validate that the data object is present and `ebLoad` is not null
 					if (meterData == null || meterData.getEbLoad() == null) {
 						throw new ApplicationException("Data is required for operation: " + operationType);
@@ -80,9 +77,9 @@ public class MeterOperationService {
 					break;
 
 				case DISCONNECT:
-//					if(meterInfos.size()>1) {
-//						throw new ApplicationException("At a time only one meter allow to process this operation");
-//					}  //we wil think later for this operation
+					if(meterInfos.size()>1) {
+						throw new ApplicationException("At a time only one meter allow to process this operation");
+					}  //we wil think later for this operation
 					if (meterData != null) {
 						meterData.setStatus(meter.disconnect());
 					} else {

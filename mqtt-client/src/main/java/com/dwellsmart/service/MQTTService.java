@@ -1,11 +1,13 @@
 package com.dwellsmart.service;
 
 import static com.dwellsmart.constants.MQTTConstants.CLIENT_ID;
-import static com.dwellsmart.constants.MQTTConstants.*;
+import static com.dwellsmart.constants.MQTTConstants.DEFAULT_PUBLISH_TOPIC;
+import static com.dwellsmart.constants.MQTTConstants.DEFAULT_SUBSCRIBE_TOPIC;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.springframework.stereotype.Component;
 
@@ -23,26 +25,30 @@ import software.amazon.awssdk.crt.mqtt.QualityOfService;
 @Slf4j
 public class MQTTService {
 
-	private final PoolManager manager ;
-	
-	private final MqttClientConnection connection = MQTTConnection.createMqttConnection(CLIENT_ID);
-	
+	private final PoolManager manager;
+
+	private final MqttClientConnection connection = MQTTConnection.createMqttConnection(CLIENT_ID, this);
+
 	public MQTTService(PoolManager manager) {
 		this.manager = manager;
 	}
-	
+
 	@PostConstruct
 	public void init() {
 		this.connect();
-		this.defaultSubscribe();
-	}
-	
-	public void defaultPublish(byte ...response) {
-		connection.publish(new MqttMessage(DEFAULT_PUBLISH_TOPIC, response, QualityOfService.AT_LEAST_ONCE, false));
-		log.info("Response sent to default topic: " + DEFAULT_PUBLISH_TOPIC);// TODO for logging
+		this.subscribe();
 	}
 
-	
+	public void publish(byte... response) {
+		connection.publish(new MqttMessage(DEFAULT_PUBLISH_TOPIC, response, QualityOfService.AT_LEAST_ONCE, false));
+		log.info("Response sent to default topic: " + DEFAULT_PUBLISH_TOPIC);
+	}
+
+	public void publish(String topic, byte... response) {
+		connection.publish(new MqttMessage(topic, response, QualityOfService.AT_LEAST_ONCE, false));
+		log.info("Response sent to this topic: " + topic);
+	}
+
 	private void connect() {
 		CompletableFuture<Boolean> connected = connection.connect();
 		try {
@@ -53,8 +59,8 @@ public class MQTTService {
 		}
 
 	}
-	
-	private void defaultSubscribe() {
+
+	private void subscribe() {
 		connection.subscribe(DEFAULT_SUBSCRIBE_TOPIC, QualityOfService.AT_LEAST_ONCE, message -> {
 			log.info("Request Received Timestamp: " + LocalDateTime.now());
 			String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
@@ -65,18 +71,22 @@ public class MQTTService {
 		log.info("Subscribed to default topic: " + DEFAULT_SUBSCRIBE_TOPIC);
 	}
 
+	public void resubscribeToTopics() {
+		this.subscribe();
+	}
+
 	@PreDestroy
 	public void cleanup() {
 		// Disconnect
-//        CompletableFuture<Void> disconnected = connection.disconnect();
-//        try {
-//			disconnected.get();
-//		} catch (InterruptedException | ExecutionException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		CompletableFuture<Void> disconnected = connection.disconnect();
+		try {
+			disconnected.get();
+		} catch (InterruptedException | ExecutionException e) {
+			log.error("Disconnection interrupted");
+			e.printStackTrace();
+		}
 
-        connection.close();
+		connection.close();
 		log.info("Connection closed");
 	}
 

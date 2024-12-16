@@ -65,19 +65,20 @@ public class PoolManager {
 				// Main Functionality:
 				meterOperationService.processOperation(operationPayload);
 
-				log.debug("Returning payload: \n" + operationPayload);
+				log.trace("Returning payload: \n" + operationPayload);
 
 				response = payloadUtils.convertToResponseAsBytes(operationPayload);
+				mqttService.publish(operationPayload.getMessageId(), response);
 
 			} catch (ApplicationException e) {
 				log.warn("Application Exception: " + e.getLocalizedMessage());
-//				e.printStackTrace(); // TODO for logging errorsS
+				e.printStackTrace(); // TODO for logging errorsS
 				ResponseError responseError = ResponseError.builder().errorCode(e.getCode())
 						.errorMessage(e.getMessage()).build();
 
 				log.debug("Response Error: \n" + responseError);
 				response = payloadUtils.convertToResponseAsBytes(responseError);
-
+				mqttService.publish(response);
 			} catch (Exception e) {
 				e.printStackTrace();
 				ResponseError responseError = ResponseError.builder()
@@ -85,9 +86,9 @@ public class PoolManager {
 						.errorMessage(ErrorCode.GENERIC_EXCEPTION.getErrorMessage()).build();
 				log.debug("Response Error: \n" + responseError);
 				response = payloadUtils.convertToResponseAsBytes(responseError);
+				mqttService.publish(response);
 			}
-			mqttService.defaultPublish(response);
-
+			
 			log.info("Completed payload processing: " +payload);
 		});
 	}

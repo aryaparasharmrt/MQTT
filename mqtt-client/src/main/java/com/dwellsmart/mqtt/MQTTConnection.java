@@ -5,6 +5,8 @@ import static com.dwellsmart.constants.MQTTConstants.CERT_PATH;
 import static com.dwellsmart.constants.MQTTConstants.ENDPOINT;
 import static com.dwellsmart.constants.MQTTConstants.KEY_PATH;
 
+import com.dwellsmart.service.MQTTService;
+
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.crt.CRT;
 import software.amazon.awssdk.crt.mqtt.MqttClientConnection;
@@ -17,7 +19,7 @@ import software.amazon.awssdk.iot.AwsIotMqttConnectionBuilder;
 @Slf4j
 public class MQTTConnection {
 
-	public static MqttClientConnection createMqttConnection(String clientId) {
+	public static MqttClientConnection createMqttConnection(String clientId, MQTTService mqttService) {
 
 		MqttClientConnectionEvents callbacks = new MqttClientConnectionEvents() {
 			@Override
@@ -29,7 +31,11 @@ public class MQTTConnection {
 
 			@Override
 			public void onConnectionResumed(boolean sessionPresent) {
-				System.out.println("Connection resumed: " + (sessionPresent ? "existing session" : "clean session"));
+				log.info("Connection resumed: with " + (sessionPresent ? "existing session" : "clean session"));
+				if (!sessionPresent) {
+					log.info("Resubscribing to topics after clean session reconnect...");
+					mqttService.resubscribeToTopics();
+				}
 			}
 
 			@Override
@@ -63,7 +69,11 @@ public class MQTTConnection {
 
 	    MqttClientConnection connection = builder.build();
 	    builder.close();
+	    
+	    
 	    return connection;
 	}
+	
+	
 
 }

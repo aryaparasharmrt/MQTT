@@ -1,12 +1,14 @@
 package com.dwellsmart.service;
 
-import static com.dwellsmart.constants.MQTTConstants.MAX_RETRIES;
+import static com.dwellsmart.constants.Constants.MODBUS_MAX_RETRIES;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.springframework.stereotype.Service;
+
+import com.dwellsmart.exception.ApplicationException;
 
 import lombok.extern.slf4j.Slf4j;
 import net.wimpi.modbus.ModbusException;
@@ -32,7 +34,7 @@ public class ModbusService {
 		}
 		int attempts = 0;
 
-		while (attempts < MAX_RETRIES) {
+		while (attempts < MODBUS_MAX_RETRIES) {
 			try {
 				// Create and configure request
 				ReadInputRegistersRequest request = new ReadInputRegistersRequest(ref, count);
@@ -81,7 +83,7 @@ public class ModbusService {
 		}
 		int attempts = 0;
 
-		while (attempts < MAX_RETRIES) {
+		while (attempts < MODBUS_MAX_RETRIES) {
 			try {
 				// Create and configure request
 				ReadMultipleRegistersRequest request = new ReadMultipleRegistersRequest(ref, count);
@@ -130,7 +132,7 @@ public class ModbusService {
 		}
 		int attempts = 0;
 
-		while (attempts < MAX_RETRIES) {
+		while (attempts < MODBUS_MAX_RETRIES) {
 			try {
 				// Create and configure request
 				WriteMultipleRegistersRequest request = new WriteMultipleRegistersRequest(registerRef, registers);
@@ -172,7 +174,7 @@ public class ModbusService {
 		return false;
 	}
 
-	public RTUTCPMasterConnection getConnectionToModbusServer(String conAddress) {
+	public RTUTCPMasterConnection getConnectionToModbusServer1(String conAddress) {
 //	        logger.log(Level.INFO, "Method Entry getConnectionToModbusServer at ..." + System.currentTimeMillis());
 		RTUTCPMasterConnection con = null;
 		try {
@@ -207,9 +209,9 @@ public class ModbusService {
 //	logger.severe("Connection failed: " + e.getMessage());
 
 	
-	public RTUTCPMasterConnection getConnectionToModbusServer1(String conAddress) throws Exception {
+	public RTUTCPMasterConnection getConnectionToModbusServer(String conAddress) throws ApplicationException{
 	    if (conAddress == null || !conAddress.contains(":")) {
-	        throw new IllegalArgumentException("Connection address must be in the format IP:PORT");
+	        throw new ApplicationException("Connection address must be in the format IP:PORT");
 	    }
 
 	    int idx = conAddress.indexOf(':');
@@ -217,7 +219,7 @@ public class ModbusService {
 	    int port = Integer.parseInt(conAddress.substring(idx + 1));
 
 	    if (port < 1 || port > 65535) {
-	        throw new IllegalArgumentException("Port number must be between 1 and 65535");
+	        throw new ApplicationException("Port number must be between 1 and 65535");
 	    }
 
 	    RTUTCPMasterConnection con = null;
@@ -226,14 +228,18 @@ public class ModbusService {
 	        con = new RTUTCPMasterConnection(addr, port);
 	        con.connect();
 	        log.info("Connection established to " + inetAddress + " on port " + port);
+	        return con;
 	    } catch (UnknownHostException e) {
 	        log.error("Invalid IP address: " + inetAddress);
-	        throw new Exception("Invalid IP address: " + inetAddress, e);
+	        throw new ApplicationException("Invalid IP address: " + inetAddress, e);
 	    } catch (IOException e) {
 	        log.error("Unable to connect to " + inetAddress + ":" + port);
-	        throw new Exception("Unable to connect to " + inetAddress + ":" + port, e);
-	    }
-	    return con;
+	        throw new ApplicationException("Unable to connect to " + inetAddress + ":" + port, e);
+		} catch (Exception e) {
+			log.error("Something went wrong to connect to " + inetAddress + ":" + port);
+			e.printStackTrace();
+			throw new ApplicationException("Something went wrong to connect to " + inetAddress + ":" + port, e);
+		}
 	}
 
 

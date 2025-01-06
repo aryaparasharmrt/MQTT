@@ -39,5 +39,10 @@ public class ApplicationException extends RuntimeException {
 		super(message);
 		this.errorCode = ErrorCode.GENERIC_EXCEPTION;
 	}
+	
+	public ApplicationException(String message, Throwable cause) {
+		super(message, cause);
+        this.errorCode = ErrorCode.GENERIC_EXCEPTION;
+    }
 
 }

@@ -69,7 +69,7 @@ public class PayloadUtils {
 
 		try {
 			String asString = objectMapper.writeValueAsString(obj);
-			log.debug("Response as string: \n" + asString);
+			log.trace("Response as string: \n" + asString);
 			return objectMapper.writeValueAsBytes(obj);
 		} catch (JsonProcessingException e) {
 			throw new ApplicationException(ErrorCode.GENERIC_EXCEPTION);

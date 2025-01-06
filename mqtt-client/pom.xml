@@ -28,6 +28,36 @@
 		<tag />
 		<url />
 	</scm>
+
+	<profiles>
+		<profile>
+			<id>local</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<spring.profiles.active>local</spring.profiles.active>
+			</properties>
+		</profile>
+		<profile>
+			<id>dev</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<spring.profiles.active>dev</spring.profiles.active>
+			</properties>
+		</profile>
+		<profile>
+			<id>prod</id>
+			<properties>
+				<spring.profiles.active>prod</spring.profiles.active>
+				<!--
+				<log4j2.path>/var/lib/tomcat/logs/cpt/payment-validation-service</log4j2.path>-->
+			</properties>
+		</profile>
+	</profiles>
+
 	<properties>
 		<java.version>17</java.version>
 		<spring-cloud.version>2023.0.3</spring-cloud.version>
@@ -50,8 +80,6 @@
 			<scope>test</scope>
 		</dependency>
 
-
-		<!-- https://mvnrepository.com/artifact/software.amazon.awssdk.iotdevicesdk/aws-iot-device-sdk -->
 		<dependency>
 			<groupId>software.amazon.awssdk.iotdevicesdk</groupId>
 			<artifactId>aws-iot-device-sdk</artifactId>
@@ -83,6 +111,11 @@
 			<version>1.0</version>
 		</dependency>
 
+		<!--<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
+		</dependency>-->
 	</dependencies>
 
 	<build>

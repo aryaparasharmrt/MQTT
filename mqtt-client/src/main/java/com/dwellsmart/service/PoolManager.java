@@ -1,5 +1,6 @@
 package com.dwellsmart.service;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -33,12 +34,12 @@ public class PoolManager {
 	@Autowired
 	private MeterOperationService meterOperationService;
 
-	private volatile int corePoolSize = 5;
-	private volatile int maximumPoolSize = 8;
+	private volatile int corePoolSize = 3;
+	private volatile int maximumPoolSize = 10;
 	private volatile long keepAliveTime = 30L; // In minutes
 	private volatile RejectedExecutionHandler handler = new RejectedTask();
 	private volatile ThreadFactory threadFactory = Executors.defaultThreadFactory();
-	private final BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(10);
+	private final BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(15);
 
 	private final ExecutorService threadPool;
 

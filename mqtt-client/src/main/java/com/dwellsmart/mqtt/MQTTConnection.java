@@ -1,10 +1,5 @@
 package com.dwellsmart.mqtt;
 
-import static com.dwellsmart.constants.MQTTConstants.CA_PATH;
-import static com.dwellsmart.constants.MQTTConstants.CERT_PATH;
-import static com.dwellsmart.constants.MQTTConstants.ENDPOINT;
-import static com.dwellsmart.constants.MQTTConstants.KEY_PATH;
-
 import com.dwellsmart.service.MQTTService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +14,7 @@ import software.amazon.awssdk.iot.AwsIotMqttConnectionBuilder;
 @Slf4j
 public class MQTTConnection {
 
-	public static MqttClientConnection createMqttConnection(String clientId, MQTTService mqttService) {
+	public static MqttClientConnection createMqttConnection(MQTTProperties properties, MQTTService mqttService) {
 
 		MqttClientConnectionEvents callbacks = new MqttClientConnectionEvents() {
 			@Override
@@ -56,13 +51,13 @@ public class MQTTConnection {
 			}
 		};
 
-		 AwsIotMqttConnectionBuilder builder = AwsIotMqttConnectionBuilder.newMtlsBuilderFromPath(CERT_PATH, KEY_PATH);
+		 AwsIotMqttConnectionBuilder builder = AwsIotMqttConnectionBuilder.newMtlsBuilderFromPath(properties.getCertPath(), properties.getKeyPath());
 				    builder.withConnectionEventCallbacks(callbacks)
-				    	   .withCertificateAuthorityFromPath(null, CA_PATH)
-				           .withClientId(clientId)
-				           .withEndpoint(ENDPOINT)
+				    	   .withCertificateAuthorityFromPath(null, properties.getCaPath())
+				           .withClientId(properties.getClientId())
+				           .withEndpoint(properties.getEndpoint())
 				           .withPort(8883)
-				           .withKeepAliveSecs(60)
+				           .withKeepAliveSecs(600)
 				           .withCleanSession(true) 
 				           .withReconnectTimeoutSecs(1,300) 
 				           .withProtocolOperationTimeoutMs(60000);

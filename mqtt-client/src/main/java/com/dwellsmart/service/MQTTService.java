@@ -1,9 +1,5 @@
 package com.dwellsmart.service;
 
-import static com.dwellsmart.constants.MQTTConstants.CLIENT_ID;
-import static com.dwellsmart.constants.MQTTConstants.DEFAULT_PUBLISH_TOPIC;
-import static com.dwellsmart.constants.MQTTConstants.DEFAULT_SUBSCRIBE_TOPIC;
-
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
@@ -13,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.dwellsmart.exception.ApplicationException;
 import com.dwellsmart.mqtt.MQTTConnection;
+import com.dwellsmart.mqtt.MQTTProperties;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -26,22 +23,28 @@ import software.amazon.awssdk.crt.mqtt.QualityOfService;
 public class MQTTService {
 
 	private final PoolManager manager;
+	
+	private final MQTTProperties properties;
 
-	private final MqttClientConnection connection = MQTTConnection.createMqttConnection(CLIENT_ID, this);
+	private final MqttClientConnection connection;
 
-	public MQTTService(PoolManager manager) {
+	public MQTTService(PoolManager manager, MQTTProperties properties) {
 		this.manager = manager;
+		this.properties = properties;
+		this.connection = MQTTConnection.createMqttConnection(properties, this);
 	}
 
 	@PostConstruct
 	public void init() {
 		this.connect();
+		
 		this.subscribe();
 	}
 
 	public void publish(byte... response) {
-		connection.publish(new MqttMessage(DEFAULT_PUBLISH_TOPIC, response, QualityOfService.AT_LEAST_ONCE, false));
-		log.info("Response sent to default topic: " + DEFAULT_PUBLISH_TOPIC);
+		String defaultPublishTopic = properties.getPublishTopic();
+		connection.publish(new MqttMessage(defaultPublishTopic, response, QualityOfService.AT_LEAST_ONCE, false));
+		log.info("Response sent to default topic: " + defaultPublishTopic);
 	}
 
 	public void publish(String topic, byte... response) {
@@ -53,7 +56,7 @@ public class MQTTService {
 		CompletableFuture<Boolean> connected = connection.connect();
 		try {
 			boolean sessionPresent = connected.get();
-			log.info("Connected to " + (!sessionPresent ? "new" : "existing") + " session!");
+			log.info("Connected to " + (!sessionPresent ? "new" : "existing") + " session! :: Clinet ID: "+properties.getClientId());
 		} catch (Exception ex) {
 			throw new ApplicationException("Exception occurred during connect: \n" + ex);
 		}
@@ -61,14 +64,13 @@ public class MQTTService {
 	}
 
 	private void subscribe() {
-		connection.subscribe(DEFAULT_SUBSCRIBE_TOPIC, QualityOfService.AT_LEAST_ONCE, message -> {
-			log.info("Request Received Timestamp: " + LocalDateTime.now());
+		String defaultSubscribeTopic = properties.getSubscribeTopic();
+		connection.subscribe(defaultSubscribeTopic, QualityOfService.AT_LEAST_ONCE, message -> {
 			String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
-
 			// Process the payload
 			manager.processPayload(payload, this);
 		});
-		log.info("Subscribed to default topic: " + DEFAULT_SUBSCRIBE_TOPIC);
+		log.info("Subscribed to default topic: " + defaultSubscribeTopic);
 	}
 
 	public void resubscribeToTopics() {

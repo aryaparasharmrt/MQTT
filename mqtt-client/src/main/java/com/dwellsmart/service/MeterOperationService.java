@@ -106,10 +106,12 @@ public class MeterOperationService {
 				}
 
 			}
+		} catch (ApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 //			request.setMessage(e.getMessage());
-			e.printStackTrace();
-			throw new ApplicationException("Unable to process operation: "+e.getMessage());
+//			e.printStackTrace();
+			throw new ApplicationException("Unable to process operation: " + e.getMessage());
 		} finally {
 			if (connection != null && connection.isConnected()) {
 				connection.close();

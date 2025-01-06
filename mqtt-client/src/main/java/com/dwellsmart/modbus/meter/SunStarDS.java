@@ -3,7 +3,7 @@ package com.dwellsmart.modbus.meter;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -182,7 +182,7 @@ public class SunStarDS extends AbstractMeter {
 
 				}
 
-				meterReading.setReadingDateTime(LocalDate.now().toString());
+				meterReading.setReadingDateTime(LocalDateTime.now().toString());
 				meterReading.setStatus(true);
 				return meterReading;
 			}

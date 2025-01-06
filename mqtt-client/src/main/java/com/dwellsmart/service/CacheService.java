@@ -8,24 +8,20 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 
-import com.dwellsmart.constants.MQTTConstants;
+import com.dwellsmart.constants.Constants;
 import com.dwellsmart.constants.MeterType;
 import com.dwellsmart.pojo.MeterAddressMap;
 
 import lombok.extern.slf4j.Slf4j;
 import net.wimpi.modbus.net.RTUTCPMasterConnection;
 
+import static com.dwellsmart.constants.Constants.*;
+
 @Service
 @Slf4j
 public class CacheService {
 
 	
-	 // Max cache size limit
-    private final int MAX_CACHE_SIZE = 5000;
-    
-    // Cache expiry duration (6 hours in milliseconds)
-    private final long EXPIRY_DURATION = 6 * 60 * 60 * 1000;  // 6 hours in milliseconds
-
 	private final Map<MeterType, MeterAddressMap> meterAddressMapCache = new ConcurrentHashMap<>();
 
 	private final Map<String, RTUTCPMasterConnection> masterConnectionCache = new ConcurrentHashMap<>();
@@ -67,7 +63,7 @@ public class CacheService {
 
         if (messageIdCache.containsKey(messageId)) {
             Instant lastTimestamp = messageIdCache.get(messageId);
-            if (Duration.between(lastTimestamp, currentTimestamp).compareTo(MQTTConstants.MESSAGE_VALIDITY_DURATION) < 0) {
+            if (Duration.between(lastTimestamp, currentTimestamp).compareTo(Constants.MESSAGE_VALIDITY_DURATION) < 0) {
                 return false; // Reject if within validity period
             }
         }

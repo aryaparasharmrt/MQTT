@@ -37,7 +37,6 @@ public class MQTTService {
 	@PostConstruct
 	public void init() {
 		this.connect();
-		
 		this.subscribe();
 	}
 
@@ -55,8 +54,7 @@ public class MQTTService {
 	private void connect() {
 		CompletableFuture<Boolean> connected = connection.connect();
 		try {
-			boolean sessionPresent = connected.get();
-			log.info("Connected to " + (!sessionPresent ? "new" : "existing") + " session! :: Clinet ID: "+properties.getClientId());
+			connected.get();
 		} catch (Exception ex) {
 			throw new ApplicationException("Exception occurred during connect: \n" + ex);
 		}
@@ -89,7 +87,6 @@ public class MQTTService {
 		}
 
 		connection.close();
-		log.info("Connection closed");
 	}
 
 }

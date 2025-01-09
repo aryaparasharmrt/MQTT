@@ -95,7 +95,7 @@ public class SunStarDSPP extends AbstractMeter {
 				meterReading.setDgReading(dg_bd.divide(new BigDecimal(10)).doubleValue());
 
 				// Prepare other request for other parameters
-				Thread.sleep(100);
+				Thread.sleep(800);
 
 				res = modbusService.readMultipleRegistersRequest(meterId, addressMap.getOtherRegisterAddress(),
 						addressMap.getOtherRegistersCount(), connection);
@@ -310,7 +310,6 @@ public class SunStarDSPP extends AbstractMeter {
             numberString = "0" + numberString;
         }
 
-        System.out.println("Number is " + numberString);
         // Extract the 6 least significant digits
         String lsbDigits = numberString.substring(2);
 
@@ -327,8 +326,8 @@ public class SunStarDSPP extends AbstractMeter {
             String asciiHex = Integer.toHexString((int) firstChar) + Integer.toHexString((int) secondChar);
             int asciiDecimal = Integer.parseInt(asciiHex, 16);
 
-            System.out.println("Pair " + (i / 2 + 1) + " being " + firstChar + secondChar
-                    + ", hex number " + asciiHex + " becomes " + asciiDecimal);
+//            System.out.println("Pair " + (i / 2 + 1) + " being " + firstChar + secondChar
+//                    + ", hex number " + asciiHex + " becomes " + asciiDecimal);
             Register register = new SimpleRegister(asciiDecimal);
 
             // Add the Register object to the array

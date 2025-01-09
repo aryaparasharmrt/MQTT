@@ -11,6 +11,7 @@ import com.dwellsmart.dto.MeterData;
 import com.dwellsmart.dto.MeterInfo;
 import com.dwellsmart.dto.MeterOperationPayload;
 import com.dwellsmart.exception.ApplicationException;
+import com.dwellsmart.exception.CautionException;
 import com.dwellsmart.factory.MeterFactory;
 import com.dwellsmart.modbus.IMeter;
 
@@ -34,12 +35,11 @@ public class MeterOperationService {
 		try {
 			connection = modbusService.getConnectionToModbusServer(request.getIpAddress());
 			request.setIpStatus(connection != null && connection.isConnected());
-	        if (!connection.isConnected()) {
-	            request.setMessage("Connection to server failed");
-	            request.setMeters(null);
-	            return;
-	        }
-
+//	        if (!connection.isConnected()) {
+//	            request.setMessage("Connection to server failed");
+//	            request.setMeters(null);
+//	            return;
+//	        }
 			List<MeterInfo> meterInfos = request.getMeters();
 			for (MeterInfo meterInfo : meterInfos) {
 				MeterData meterData = meterInfo.getData();
@@ -106,6 +106,11 @@ public class MeterOperationService {
 				}
 
 			}
+		} catch (CautionException e) {
+			// Return Response in dynamic topic(For not getting connection, And more...) //We will cover more cases
+			request.setMessage(e.getMessage());
+			request.setMeters(null);
+
 		} catch (ApplicationException e) {
 			throw e;
 		} catch (Exception e) {

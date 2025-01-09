@@ -41,7 +41,7 @@ public class MQTTConnection {
 			@Override
 			public void onConnectionSuccess(OnConnectionSuccessReturn data) {
 				boolean sessionPresent = data.getSessionPresent();
-				log.info("Conncetion success with old Session : " + (sessionPresent ? "Yes" : "NO"));
+				log.info("Connected to " + (!sessionPresent ? "new" : "existing") + " session! :: Clinet ID: "+properties.getClientId());
 			}
 
 			@Override

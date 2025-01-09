@@ -1,9 +1,22 @@
 package com.dwellsmart.constants;
 
-
 import lombok.Getter;
 
 public enum ErrorCode {
+	
+	
+//	GENERIC_EXCEPTION("10000", "Something went wrong, please try later", HttpStatus.INTERNAL_SERVER_ERROR),
+//
+//    TOKEN_EXPIRED("10001", "Authentication failed: Token has expired.", HttpStatus.UNAUTHORIZED),
+//    TOKEN_NOT_YET_VALID("10002", "Authentication failed: Token is not yet valid.", HttpStatus.UNAUTHORIZED),
+//    UNSUPPORTED_TOKEN("10003", "Bad request: Unsupported token format.", HttpStatus.BAD_REQUEST),
+//    MALFORMED_TOKEN("10004", "Bad request: Malformed token.", HttpStatus.BAD_REQUEST),
+//    INVALID_SIGNATURE("10005", "Authentication failed: Invalid token signature.", HttpStatus.UNAUTHORIZED),
+//    INVALID_ISSUER("10006", "Authentication failed: Token issuer is invalid.", HttpStatus.UNAUTHORIZED),
+//    INVALID_TOKEN("10007", "Authentication failed: Token is invalid.", HttpStatus.UNAUTHORIZED),
+//    AUTHENTICATION_FAILED("10008", "Authentication failed.", HttpStatus.UNAUTHORIZED),
+//    
+//    USER_NOT_FOUND("10009", "User not found", HttpStatus.NOT_FOUND),
 	
 	INVALID_JSON("ERR001", "Invalid JSON "),
     MISSING_FIELD("ERR002", "Validation failed: Missing required field"),

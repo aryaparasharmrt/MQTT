@@ -52,7 +52,7 @@ public class PayloadUtils {
 				Path propertyPath = violation.getPropertyPath();
 				String message = violation.getMessage();
 
-				System.out.println(propertyPath.toString() +"\n"+ message);
+				log.info(propertyPath.toString() +"\n"+ message);
 
 				errorMessages.append(violation.getPropertyPath()).append(": ").append(violation.getMessage());
 				break;

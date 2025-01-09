@@ -17,6 +17,7 @@ import com.dwellsmart.constants.ErrorCode;
 import com.dwellsmart.dto.MeterOperationPayload;
 import com.dwellsmart.dto.ResponseError;
 import com.dwellsmart.exception.ApplicationException;
+import com.dwellsmart.exception.CautionException;
 import com.dwellsmart.util.PayloadUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -27,19 +28,19 @@ public class PoolManager {
 
 	@Autowired
 	private CacheService cacheService;
-	
+
 	@Autowired
 	private PayloadUtils payloadUtils;
-	
+
 	@Autowired
 	private MeterOperationService meterOperationService;
 
-	private volatile int corePoolSize = 3;
-	private volatile int maximumPoolSize = 10;
+	private volatile int corePoolSize = 5;
+	private volatile int maximumPoolSize = 100;
 	private volatile long keepAliveTime = 30L; // In minutes
 	private volatile RejectedExecutionHandler handler = new RejectedTask();
 	private volatile ThreadFactory threadFactory = Executors.defaultThreadFactory();
-	private final BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(15);
+	private final BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(250);
 
 	private final ExecutorService threadPool;
 
@@ -50,48 +51,62 @@ public class PoolManager {
 		threadPool = executor;
 	}
 
-	public void processPayload(String payload, MQTTService mqttService) {
+	public void processPayload(final String payload,final MQTTService mqttService) {
 
-		threadPool.submit(() -> {
-			log.debug("Processing payload: " + payload);
-			byte[] response = null;
-			try {
-				MeterOperationPayload operationPayload = payloadUtils.validateRequest(payload);
+		threadPool.submit(new Runnable() {
 
-				// Validate message ID
-				if (!cacheService.isValid(operationPayload.getMessageId())) {
-					throw new ApplicationException("Duplicate message id request rejected within 10 minutes, message id: " + operationPayload.getMessageId());
+			@Override
+			public void run() {
+				
+				log.debug("Processing payload: " + payload);
+				byte[] response = null;
+				try {
+					MeterOperationPayload operationPayload = payloadUtils.validateRequest(payload);
+
+					// Validate message ID
+					if (!cacheService.isValid(operationPayload.getMessageId())) {
+						throw new ApplicationException(
+								"Duplicate message id request rejected within 10 minutes, message id: "
+										+ operationPayload.getMessageId());
+					}
+
+					// Main Functionality:
+					meterOperationService.processOperation(operationPayload);
+
+					log.trace("Returning payload: \n" + operationPayload);
+
+					response = payloadUtils.convertToResponseAsBytes(operationPayload);
+					mqttService.publish(operationPayload.getMessageId(), response);
+
+				} catch (ApplicationException e) {
+					log.warn("Application Exception: " + e.getLocalizedMessage());
+					e.printStackTrace(); // TODO for logging errors
+					ResponseError responseError = ResponseError.builder().errorCode(e.getCode())
+							.errorMessage(e.getMessage()).build();
+
+					log.debug("Response Error: \n" + responseError);
+					response = payloadUtils.convertToResponseAsBytes(responseError);
+					mqttService.publish(response);
+				} catch (Exception e) {
+					e.printStackTrace();
+					ResponseError responseError = ResponseError.builder()
+							.errorCode(ErrorCode.GENERIC_EXCEPTION.getErrorCode())
+							.errorMessage(ErrorCode.GENERIC_EXCEPTION.getErrorMessage()).build();
+					log.debug("Response Error: \n" + responseError);
+					response = payloadUtils.convertToResponseAsBytes(responseError);
+					mqttService.publish(response);
 				}
 
-				// Main Functionality:
-				meterOperationService.processOperation(operationPayload);
-
-				log.trace("Returning payload: \n" + operationPayload);
-
-				response = payloadUtils.convertToResponseAsBytes(operationPayload);
-				mqttService.publish(operationPayload.getMessageId(), response);
-
-			} catch (ApplicationException e) {
-				log.warn("Application Exception: " + e.getLocalizedMessage());
-				e.printStackTrace(); // TODO for logging errorsS
-				ResponseError responseError = ResponseError.builder().errorCode(e.getCode())
-						.errorMessage(e.getMessage()).build();
-
-				log.debug("Response Error: \n" + responseError);
-				response = payloadUtils.convertToResponseAsBytes(responseError);
-				mqttService.publish(response);
-			} catch (Exception e) {
-				e.printStackTrace();
-				ResponseError responseError = ResponseError.builder()
-						.errorCode(ErrorCode.GENERIC_EXCEPTION.getErrorCode())
-						.errorMessage(ErrorCode.GENERIC_EXCEPTION.getErrorMessage()).build();
-				log.debug("Response Error: \n" + responseError);
-				response = payloadUtils.convertToResponseAsBytes(responseError);
-				mqttService.publish(response);
+				log.info("Completed payload processing: " + payload);
 			}
-			
-			log.info("Completed payload processing: " +payload);
+
+			@Override
+			public String toString() {
+				//Returning payload If task is rejected...
+				return payload;
+			}
 		});
+
 	}
 
 	static class RejectedTask implements RejectedExecutionHandler {

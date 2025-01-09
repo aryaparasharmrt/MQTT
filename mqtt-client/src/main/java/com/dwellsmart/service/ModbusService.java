@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 import org.springframework.stereotype.Service;
 
 import com.dwellsmart.exception.ApplicationException;
+import com.dwellsmart.exception.CautionException;
 
 import lombok.extern.slf4j.Slf4j;
 import net.wimpi.modbus.ModbusException;
@@ -209,7 +210,7 @@ public class ModbusService {
 //	logger.severe("Connection failed: " + e.getMessage());
 
 	
-	public RTUTCPMasterConnection getConnectionToModbusServer(String conAddress) throws ApplicationException{
+	public RTUTCPMasterConnection getConnectionToModbusServer(String conAddress) throws CautionException{
 	    if (conAddress == null || !conAddress.contains(":")) {
 	        throw new ApplicationException("Connection address must be in the format IP:PORT");
 	    }
@@ -231,14 +232,14 @@ public class ModbusService {
 	        return con;
 	    } catch (UnknownHostException e) {
 	        log.error("Invalid IP address: " + inetAddress);
-	        throw new ApplicationException("Invalid IP address: " + inetAddress, e);
+	        throw new CautionException("Invalid IP address: " + inetAddress, e);
 	    } catch (IOException e) {
 	        log.error("Unable to connect to " + inetAddress + ":" + port);
-	        throw new ApplicationException("Unable to connect to " + inetAddress + ":" + port, e);
+	        throw new CautionException("Unable to connect to " + inetAddress + ":" + port, e);
 		} catch (Exception e) {
 			log.error("Something went wrong to connect to " + inetAddress + ":" + port);
 			e.printStackTrace();
-			throw new ApplicationException("Something went wrong to connect to " + inetAddress + ":" + port, e);
+			throw new CautionException("Something went wrong to connect to " + inetAddress + ":" + port, e);
 		}
 	}
 

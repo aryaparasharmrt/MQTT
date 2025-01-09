@@ -3,14 +3,14 @@ package com.dwellsmart.constants;
 import lombok.Getter;
 
 public enum OperationType {
-    CONNECT("Connect operation"),
-    DISCONNECT("Disconnect operation"),
-    READ("Read operation"),
-    W_LOAD("Write Load operation"), // W_LOAD: Set Load
-    W_PP("Write Password Protected operation"), // W_PP: Set Protection Mode
-    W_ID("Write Unit ID operation"),
-    FACTORY_RESET("Factory Reset operation"),
-    PASS_RESET("Reset Default Password operation");
+    CONNECT("Connect Operation"),
+    DISCONNECT("Disconnect Operation"),
+    READ("Read Operation"),
+    W_LOAD("Write Load Operation"), // W_LOAD: Set Load
+    W_PP("Write Password Protected Operation"), // W_PP: Set Protection Mode
+    W_ID("Write Unit ID Operation"),
+    FACTORY_RESET("Factory Reset Operation"),
+    PASS_RESET("Reset Default Password Operation");
 
 	@Getter
     private final String description;

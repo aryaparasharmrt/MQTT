@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import com.dwellsmart.constants.MeterType;
 import com.dwellsmart.exception.ApplicationException;
+import com.dwellsmart.exception.CautionException;
 import com.dwellsmart.modbus.IMeter;
 import com.dwellsmart.modbus.meter.SunStarDS;
 import com.dwellsmart.modbus.meter.SunStarDSPP;
@@ -32,13 +33,15 @@ public class MeterFactory {
 			return applicationContext.getBean(SunStarDS.class, meterId, cacheService.getMeterAddressMap(meterType),connection);
 		case SUNSTAR_DS_PP:  //Meter Type 9
 			return applicationContext.getBean(SunStarDSPP.class, meterId, cacheService.getMeterAddressMap(meterType),connection);
-		case ENERTRAK:
+		case ENERTRAK:		//Meter Type 2
 			return null;
 		case UNKNOWN:
 			 log.warn("Unknown MeterType ID received. Skipping specific actions.");
 			 return null;
 		default:
-			throw new ApplicationException("Unknown meter type or not implemented yet.");
+//			throw new CautionException("Unknown meter type or not implemented yet.");
+			log.warn("Unknown meter type or not implemented yet.");
+			return null;
 		}
 	}
 

@@ -43,8 +43,8 @@ public class MeterOperationService {
 				IMeter meter = meterFactory.getMeter(meterInfo.getMeterTypeId(), meterInfo.getMeterId(), connection);
 
 				if (meter == null) {
-					messageResponse = messageResponse.append("\nMeterTypeId: " + meterInfo.getMeterTypeId()
-							+ ", IpAddress: " + request.getIpAddress() + ", Meter not found or implemented.");
+					messageResponse.append("MeterTypeId: " + meterInfo.getMeterTypeId()
+							+ ", IpAddress: " + request.getIpAddress() + ", Meter not found or implemented.").append('\n');
 					meterInfo.setData(MeterData.builder().status(false).build());
 					request.setMessage(messageResponse.toString());
 					continue;
@@ -109,7 +109,7 @@ public class MeterOperationService {
 			}
 		} catch (ModbusConnectionException e) {
 			// Return Response in dynamic topic(For not getting connection, And more...) //We will cover more cases
-			request.setMessage(messageResponse.append("\n"+e.getMessage()).toString());
+			request.setMessage(messageResponse.append(e.getMessage()).toString());
 			request.setMeters(null); 
 		} catch (ApplicationException e) {
 			throw e;

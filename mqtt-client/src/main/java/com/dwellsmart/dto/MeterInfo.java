@@ -16,7 +16,7 @@ public class MeterInfo {
 	private Short meterId;
 
 	@NotNull
-	private MeterType metersTypeId;
+	private MeterType meterTypeId;
 
 	private MeterData data;
 

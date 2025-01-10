@@ -2,7 +2,7 @@ package com.dwellsmart.exception;
 
 import com.dwellsmart.constants.ErrorCode;
 
-public class CautionException extends RuntimeException {
+public class ModbusConnectionException extends RuntimeException {
 
 	private static final long serialVersionUID = -6566316610483296103L;
 	
@@ -26,22 +26,22 @@ public class CautionException extends RuntimeException {
 		return errorCode;
 	}
 
-	public CautionException(ErrorCode errorCode) {
+	public ModbusConnectionException(ErrorCode errorCode) {
 		super(errorCode.getErrorMessage());
 		this.errorCode = errorCode;
 	}
 	
-	public CautionException(ErrorCode errorCode, String message) {
+	public ModbusConnectionException(ErrorCode errorCode, String message) {
 		super(errorCode.getErrorMessage()+ message);
 		this.errorCode = errorCode;
 	}
 	
-	public CautionException(String message) {
+	public ModbusConnectionException(String message) {
 		super(message);
 		this.errorCode = ErrorCode.GENERIC_EXCEPTION;
 	}
 	
-	public CautionException(String message, Throwable cause) {
+	public ModbusConnectionException(String message, Throwable cause) {
 		super(message, cause);
         this.errorCode = ErrorCode.GENERIC_EXCEPTION;
     }

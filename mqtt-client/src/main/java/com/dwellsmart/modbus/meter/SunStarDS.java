@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.dwellsmart.constants.MeterType;
 import com.dwellsmart.dto.MeterData;
 import com.dwellsmart.pojo.MeterAddressMap;
 
@@ -16,13 +17,21 @@ import net.wimpi.modbus.net.RTUTCPMasterConnection;
 import net.wimpi.modbus.procimg.Register;
 import net.wimpi.modbus.procimg.SimpleRegister;
 
+
+/**
+ * This class represents a Sunstar Meter which is manufacturer for DwellSMART pvt. ltd. 
+ * 
+ * 
+ * 
+ * @author Anshul Goyal
+ */
 @Slf4j
 public class SunStarDS extends AbstractMeter {
 
 	public SunStarDS(short meterId, MeterAddressMap addressMap, RTUTCPMasterConnection connection) {
 		super(meterId, addressMap, connection);
 	}
-	
+
 	@Override
 	public MeterData readMeter() {
 
@@ -37,11 +46,11 @@ public class SunStarDS extends AbstractMeter {
 
 				ByteArrayOutputStream outputStreamEBLoad = new ByteArrayOutputStream();
 				outputStreamEBLoad.write(res.getRegister(6).toBytes());
-				meterReading.setEbLoad(new BigInteger(1, outputStreamEBLoad.toByteArray()).doubleValue());
+				meterReading.setEbLoad(new BigInteger(1, outputStreamEBLoad.toByteArray()).doubleValue() / 100);
 
 				ByteArrayOutputStream outputStreamDGLoad = new ByteArrayOutputStream();
 				outputStreamDGLoad.write(res.getRegister(8).toBytes());
-				meterReading.setDgLoad(new BigInteger(1, outputStreamDGLoad.toByteArray()).doubleValue());
+				meterReading.setDgLoad(new BigInteger(1, outputStreamDGLoad.toByteArray()).doubleValue() / 100);
 
 				ByteArrayOutputStream outputStreamMode = new ByteArrayOutputStream();
 				outputStreamMode.write(res.getRegister(12).toBytes()[0]);
@@ -87,7 +96,7 @@ public class SunStarDS extends AbstractMeter {
 				meterReading.setDgReading(dg_bd.divide(new BigDecimal(10)).doubleValue());
 
 				// Prepare other request for other parameters
-				Thread.sleep(100);
+				Thread.sleep(800);
 
 				res = modbusService.readMultipleRegistersRequest(meterId, addressMap.getOtherRegisterAddress(),
 						addressMap.getOtherRegistersCount(), connection);
@@ -192,21 +201,160 @@ public class SunStarDS extends AbstractMeter {
 
 		return meterReading;
 	}
-	
 
 	@Override
 	public boolean setUnitId(Short unitId) {
-		log.warn("this method not implemented");
+		
+		if (addressMap.getMeterType() == MeterType.SUNSTAR_DS_PP) {
+
+			String hexString = Integer.toHexString(unitId);
+
+			// Step 1: Append "AA" to the hexadecimal string
+			hexString += "AA";
+
+			Register changeMeterIdRegister = new SimpleRegister(Integer.parseInt(hexString, 16));
+
+			return modbusService.writeMultipleRegistersRequest(meterId, addressMap.getChangeMeterIdAddress(),
+					connection, changeMeterIdRegister);
+		}
+		log.warn("this method not implemented yet");
 		return false;
+
 	}
 
 	@Override
 	public boolean setLoad(Double ebLoad, Double dgLoad) {
-
 		Register ebLoadReg = new SimpleRegister(ebLoad.intValue() * 100);
 		Register dgLoadReg = new SimpleRegister(dgLoad.intValue() * 100);
 
+		if (addressMap.getMeterType() == MeterType.SUNSTAR_DS_PP) {
+
+			MeterData meter = this.readMeter();
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			String serialNo = meter.getSerialNo();
+			boolean isProtectionModeEnabled = this.enableProtectionMode(serialNo);
+			if (isProtectionModeEnabled) {
+
+				return super.setLoad(ebLoadReg, dgLoadReg);
+			}
+			return isProtectionModeEnabled;
+		}
+
 		return super.setLoad(ebLoadReg, dgLoadReg);
+
 	}
 	
+	@Override
+	public boolean connect() {
+
+		if (addressMap.getMeterType() == MeterType.SUNSTAR_DS_PP) {
+
+			MeterData meter = this.readMeter();
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			String serialNo = meter.getSerialNo();
+			String relayStatus = meter.getRelayStatus(); // For confirmation of meter on or off
+			if (relayStatus != null && relayStatus.equals("ON")) {
+				log.info("Relay status is already ON for this meter serial number: " + serialNo);
+				return true;
+			}
+
+			boolean isProtectionModeEnabled = this.enableProtectionMode(serialNo);
+			if (isProtectionModeEnabled) {
+				return super.connect();
+			}
+			return isProtectionModeEnabled;
+
+		}
+		return super.connect();
+
+	}
+	
+	@Override
+	public boolean disconnect() {
+
+		if (addressMap.getMeterType() == MeterType.SUNSTAR_DS_PP) {
+
+			MeterData meter = this.readMeter();
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			String serialNo = meter.getSerialNo();
+			String relayStatus = meter.getRelayStatus(); // For confirmation of meter on or off
+			if (relayStatus != null && relayStatus.equals("OFF")) {
+				log.info("Relay status is already OFF for this meter serial number: " + serialNo);
+				return true;
+			}
+
+			boolean isProtectionModeEnabled = this.enableProtectionMode(serialNo);
+			if (isProtectionModeEnabled) {
+				return super.disconnect();
+			}
+			return isProtectionModeEnabled;
+		}
+		
+		return super.disconnect();
+
+	}
+
+	private boolean enableProtectionMode(String serialNo) {
+		if (null != serialNo && !serialNo.equalsIgnoreCase("")) {
+			Register[] serialPasswordRegister = SunStarDS.serialToPasswordRegisters(Integer.parseInt(serialNo));
+
+			return modbusService.writeMultipleRegistersRequest(meterId, addressMap.getValidatorRegisterAddress(),
+					connection,serialPasswordRegister);
+
+		}
+		return false;
+
+	}
+	
+	private static Register[] serialToPasswordRegisters(int serial) {
+        String numberString = String.valueOf(serial); // Replace this with your 8-digit number as a string
+        while (numberString.length() < 8) {
+            numberString = "0" + numberString;
+        }
+
+        // Extract the 6 least significant digits
+        String lsbDigits = numberString.substring(2);
+
+        Register[] registers = new Register[lsbDigits.length() / 2];
+        int registerIndex = 0;
+        // Convert each digit to a character and print its ASCII value
+        for (int i = 0; i < lsbDigits.length(); i += 2) {
+            char firstDigit = lsbDigits.charAt(i);
+            char secondDigit = (i + 1 < lsbDigits.length()) ? lsbDigits.charAt(i + 1) : '0';
+
+            char firstChar = (char) (firstDigit + 'A' - '0');
+            char secondChar = (char) (secondDigit + 'A' - '0');
+
+            String asciiHex = Integer.toHexString((int) firstChar) + Integer.toHexString((int) secondChar);
+            int asciiDecimal = Integer.parseInt(asciiHex, 16);
+
+//            System.out.println("Pair " + (i / 2 + 1) + " being " + firstChar + secondChar
+//                    + ", hex number " + asciiHex + " becomes " + asciiDecimal);
+            Register register = new SimpleRegister(asciiDecimal);
+
+            // Add the Register object to the array
+            registers[registerIndex] = register;
+            registerIndex++;
+        }
+        return registers;
+
+    }
+
 }

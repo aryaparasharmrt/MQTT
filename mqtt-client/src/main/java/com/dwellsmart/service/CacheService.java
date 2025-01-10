@@ -98,21 +98,6 @@ public class CacheService {
 		switch (meterType) {
 
 		case SUNSTAR_DS:
-			addressMap.setMeterType(meterType);
-			addressMap.setKwhRegisterAddress(8316);
-			addressMap.setKwhRegisterAddressesCount(98);
-			addressMap.setConnectRegisterAddress(770);
-			addressMap.setConnectRegisterValue(20560);
-			addressMap.setDisconnectRegisterAddress(770);
-			addressMap.setDisconnectRegisterValue(0);
-			addressMap.setOtherRegisterAddress(12343);
-			addressMap.setOtherRegistersCount(52);
-			addressMap.setDgKwhRegisterAddress(0);
-			addressMap.setLoadRegisterAddress(785);
-			addressMap.setOverloadattemptsRegAddress(817);
-			addressMap.setOverloadattemptsdelayRegAddress(819);
-			return addressMap;
-
 		case SUNSTAR_DS_PP:
 			addressMap.setMeterType(meterType);
 			addressMap.setKwhRegisterAddress(8316);
@@ -127,9 +112,9 @@ public class CacheService {
 			addressMap.setLoadRegisterAddress(785);
 			addressMap.setOverloadattemptsRegAddress(817);
 			addressMap.setOverloadattemptsdelayRegAddress(819);
-			addressMap.setPasswordRegisterAddress(2672);
-			addressMap.setValidatorRegisterAddress(2929);
-			addressMap.setChangeMeterIdAddress(769);
+			addressMap.setPasswordRegisterAddress(meterType == MeterType.SUNSTAR_DS_PP ? 2672 : 0);
+			addressMap.setValidatorRegisterAddress(meterType == MeterType.SUNSTAR_DS_PP ? 2929 : 0);
+			addressMap.setChangeMeterIdAddress(meterType == MeterType.SUNSTAR_DS_PP ? 769 : 0);
 			return addressMap;
 
 		case ENERTRAK:
@@ -146,6 +131,39 @@ public class CacheService {
 			addressMap.setLoadRegisterAddress(17);
 			addressMap.setOverloadattemptsRegAddress(49);
 			addressMap.setOverloadattemptsdelayRegAddress(51);
+			return addressMap;
+			
+		case SUMERU_VERDE:
+		case SUMERU_VERDE_MSB:
+			addressMap.setMeterType(meterType);
+			addressMap.setKwhRegisterAddress(2304);
+			addressMap.setKwhRegisterAddressesCount(16);
+			addressMap.setConnectRegisterAddress(3664);
+			addressMap.setConnectRegisterValue(61440);
+			addressMap.setDisconnectRegisterAddress(3664);
+			addressMap.setDisconnectRegisterValue(3840);
+			addressMap.setOtherRegisterAddress(772);
+			addressMap.setOtherRegistersCount(28);
+			addressMap.setDgKwhRegisterAddress(0);
+			addressMap.setLoadRegisterAddress(1026);
+			addressMap.setEbdgRegisterAddress(3122);
+			addressMap.setEbValue(0);
+			addressMap.setDgValue(256);
+			addressMap.setEnableMsbFirst(meterType == MeterType.SUMERU_VERDE_MSB);
+			return addressMap;
+			
+		case LNT1P:
+			addressMap.setMeterType(meterType);
+			addressMap.setKwhRegisterAddress(13);
+			addressMap.setKwhRegisterAddressesCount(30);
+			addressMap.setConnectRegisterAddress(4);
+			addressMap.setConnectRegisterValue(0);
+			addressMap.setDisconnectRegisterAddress(4);
+			addressMap.setDisconnectRegisterValue(1);
+			addressMap.setOtherRegisterAddress(4);
+			addressMap.setOtherRegistersCount(9);
+			addressMap.setDgKwhRegisterAddress(41);
+			addressMap.setLoadRegisterAddress(19);
 			return addressMap;
 			
 		default:

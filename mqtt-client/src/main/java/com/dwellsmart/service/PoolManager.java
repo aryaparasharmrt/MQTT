@@ -1,6 +1,5 @@
 package com.dwellsmart.service;
 
-import java.time.LocalDateTime;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -17,7 +16,6 @@ import com.dwellsmart.constants.ErrorCode;
 import com.dwellsmart.dto.MeterOperationPayload;
 import com.dwellsmart.dto.ResponseError;
 import com.dwellsmart.exception.ApplicationException;
-import com.dwellsmart.exception.CautionException;
 import com.dwellsmart.util.PayloadUtils;
 
 import lombok.extern.slf4j.Slf4j;

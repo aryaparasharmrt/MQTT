@@ -5,7 +5,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import com.dwellsmart.exception.ApplicationException;
-import com.dwellsmart.exception.CautionException;
+import com.dwellsmart.exception.ModbusConnectionException;
 
 import net.wimpi.modbus.io.ModbusRTUTCPTransaction;
 import net.wimpi.modbus.msg.ReadMultipleRegistersRequest;
@@ -14,7 +14,7 @@ import net.wimpi.modbus.net.RTUTCPMasterConnection;
 
 public class TCPConnectionTest {
 	
-	public static RTUTCPMasterConnection getConnectionToModbusServer(String conAddress) throws CautionException{
+	public static RTUTCPMasterConnection getConnectionToModbusServer(String conAddress) throws ModbusConnectionException{
 		 long timeMillis = System.currentTimeMillis();
 		 System.out.println("Request Started...."+timeMillis);
 		
@@ -41,16 +41,16 @@ public class TCPConnectionTest {
 	    } catch (UnknownHostException e) {
 //	        log.error("Invalid IP address: " + inetAddress);
 	    	System.out.println("Time Taken Not Connected to IP: "+ inetAddress + ": Time Taken " + (System.currentTimeMillis()- timeMillis)+ " Exception = UnknownHostException");
-	        throw new CautionException("Invalid IP address: " + inetAddress, e);
+	        throw new ModbusConnectionException("Invalid IP address: " + inetAddress, e);
 	    } catch (IOException e) {
 //	        log.error("Unable to connect to " + inetAddress + ":" + port);
 	    	System.out.println("Time Taken Not Connected to IP: "+ inetAddress + ": Time Taken " + (System.currentTimeMillis() - timeMillis)+ " Exception = IOException");
-	        throw new CautionException("Unable to connect to " + inetAddress + ":" + port, e);
+	        throw new ModbusConnectionException("Unable to connect to " + inetAddress + ":" + port, e);
 		} catch (Exception e) {
 //			log.error("Something went wrong to connect to " + inetAddress + ":" + port);
 			System.out.println("Time Taken Not Connected to IP: "+ inetAddress + ": Time Taken " + (System.currentTimeMillis() - timeMillis)+ " Exception");
 			e.printStackTrace();
-			throw new CautionException("Something went wrong to connect to " + inetAddress + ":" + port, e);
+			throw new ModbusConnectionException("Something went wrong to connect to " + inetAddress + ":" + port, e);
 		}
 	}
 

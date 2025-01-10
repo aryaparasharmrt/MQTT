@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
 import org.springframework.stereotype.Service;
 
 import com.dwellsmart.exception.ApplicationException;
-import com.dwellsmart.exception.CautionException;
+import com.dwellsmart.exception.ModbusConnectionException;
 
 import lombok.extern.slf4j.Slf4j;
 import net.wimpi.modbus.ModbusException;
@@ -20,13 +20,14 @@ import net.wimpi.modbus.msg.ReadMultipleRegistersRequest;
 import net.wimpi.modbus.msg.ReadMultipleRegistersResponse;
 import net.wimpi.modbus.msg.WriteMultipleRegistersRequest;
 import net.wimpi.modbus.msg.WriteMultipleRegistersResponse;
+import net.wimpi.modbus.msg.WriteSingleRegisterRequest;
+import net.wimpi.modbus.msg.WriteSingleRegisterResponse;
 import net.wimpi.modbus.net.RTUTCPMasterConnection;
 import net.wimpi.modbus.procimg.Register;
 
 @Service
 @Slf4j
 public class ModbusService {
-
 
 	public ReadInputRegistersResponse readInputRegistersRequest(short slaveId, int ref, int count,
 			RTUTCPMasterConnection masterConnection) {
@@ -37,14 +38,13 @@ public class ModbusService {
 
 		while (attempts < MODBUS_MAX_RETRIES) {
 			try {
-				// Create and configure request
 				ReadInputRegistersRequest request = new ReadInputRegistersRequest(ref, count);
 				request.setUnitID(slaveId);
 
 				// Create transaction
 				ModbusRTUTCPTransaction transaction = new ModbusRTUTCPTransaction(masterConnection);
 				transaction.setRequest(request);
-				transaction.execute();
+				transaction.execute(); // This will throw an exception
 
 				// Handle response
 				ReadInputRegistersResponse response = (ReadInputRegistersResponse) transaction.getResponse();
@@ -53,31 +53,30 @@ public class ModbusService {
 						&& response.getUnitID() == request.getUnitID()) {
 					return response; // Successful response
 				} else {
-//	                logWarning("Invalid response received. Attempt: " + (attempts + 1));
+					log.warn("Invalid response received. Attempt: " + (attempts + 1));
 				}
 
 			} catch (ModbusException e) {
-//                Logger.getLogger(ModbusService.class.getName()).log(Level.SEVERE, "Error in readRegisters attempt " + (attempts + 1), e);
+				log.error("Error in readInputRegistersRequest attempt ModbusException: " + (attempts + 1), e);
 			} catch (Exception e) {
-//                Logger.getLogger(MeterMapService.class.getName()).log(Level.SEVERE, "Error in readRegisters attempt " + (attempts + 1), e);
+				log.error("Error in readInputRegistersRequest attempt Exception: " + (attempts + 1), e);
 			}
 
-			// Increment retry count and add delay
 			attempts++;
 
 			try {
-				Thread.sleep(100 * (attempts + 1));
+				Thread.sleep(200 * (attempts + 1));
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt(); // Restore interrupted state
 				break;
 			}
 		}
 
-//        Logger.getLogger(ModbusService.class.getName()).log(Level.SEVERE, "Max retries reached for readRegisters");
-		return null; // Return null if all attempts fail
+		log.warn("Max retries reached for readInputRegistersRequest");
+		return null;
 	}
 
-	public ReadMultipleRegistersResponse readMultipleRegistersRequest( short slaveId,int ref, int count,
+	public ReadMultipleRegistersResponse readMultipleRegistersRequest(short slaveId, int ref, int count,
 			RTUTCPMasterConnection masterConnection) {
 		if (ref < 0 || count <= 0 || slaveId < 0 || slaveId > 256) {
 			throw new IllegalArgumentException("Invalid input parameters");
@@ -86,14 +85,13 @@ public class ModbusService {
 
 		while (attempts < MODBUS_MAX_RETRIES) {
 			try {
-				// Create and configure request
 				ReadMultipleRegistersRequest request = new ReadMultipleRegistersRequest(ref, count);
 				request.setUnitID(slaveId);
 
 				// Create transaction
 				ModbusRTUTCPTransaction transaction = new ModbusRTUTCPTransaction(masterConnection);
 				transaction.setRequest(request);
-				transaction.execute();
+				transaction.execute(); // This will throw an exception
 
 				// Handle response
 				ReadMultipleRegistersResponse response = (ReadMultipleRegistersResponse) transaction.getResponse();
@@ -102,31 +100,30 @@ public class ModbusService {
 						&& response.getUnitID() == request.getUnitID()) {
 					return response; // Successful response
 				} else {
-//	                logWarning("Invalid response received. Attempt: " + (attempts + 1));
+					log.warn("Invalid response received. Attempt: " + (attempts + 1));
 				}
 
 			} catch (ModbusException e) {
-//                Logger.getLogger(ModbusService.class.getName()).log(Level.SEVERE, "Error in readRegisters attempt " + (attempts + 1), e);
+				log.error("Error in readMultipleRegistersRequest attempt (ModbusException): " + (attempts + 1), e);
 			} catch (Exception e) {
-//                Logger.getLogger(MeterMapService.class.getName()).log(Level.SEVERE, "Error in readRegisters attempt " + (attempts + 1), e);
+				log.error("Error in readMultipleRegistersRequest attempt (Exception): " + (attempts + 1), e);
 			}
 
-			// Increment retry count and add delay
 			attempts++;
 
 			try {
-				Thread.sleep(100 * (attempts + 1));
+				Thread.sleep(200 * (attempts + 1));
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt(); // Restore interrupted state
 				break;
 			}
 		}
 
-//        Logger.getLogger(ModbusService.class.getName()).log(Level.SEVERE, "Max retries reached for readRegisters");
-		return null; // Return null if all attempts fail
+		log.warn("Max retries reached for readMultipleRegistersRequest");
+		return null;
 	}
 
-	public boolean writeMultipleRegistersRequest( short slaveId,int registerRef, 
+	public boolean writeMultipleRegistersRequest(short slaveId, int registerRef,
 			RTUTCPMasterConnection masterConnection, Register... registers) {
 		if (slaveId < 0 || slaveId > 256) {
 			throw new IllegalArgumentException("Invalid input parameters");
@@ -135,14 +132,13 @@ public class ModbusService {
 
 		while (attempts < MODBUS_MAX_RETRIES) {
 			try {
-				// Create and configure request
 				WriteMultipleRegistersRequest request = new WriteMultipleRegistersRequest(registerRef, registers);
 				request.setUnitID(slaveId);
 
 				// Create transaction
 				ModbusRTUTCPTransaction transaction = new ModbusRTUTCPTransaction(masterConnection);
 				transaction.setRequest(request);
-				transaction.execute();
+				transaction.execute(); // This will throw an exception
 
 				// Handle response
 				WriteMultipleRegistersResponse response = (WriteMultipleRegistersResponse) transaction.getResponse();
@@ -151,97 +147,105 @@ public class ModbusService {
 						&& response.getUnitID() == request.getUnitID()) {
 					return true; // Successful response
 				} else {
-//	                logWarning("Invalid response received. Attempt: " + (attempts + 1));
+					log.warn("Invalid response received. Attempt: " + (attempts + 1));
 				}
-
 			} catch (ModbusException e) {
-//                Logger.getLogger(ModbusService.class.getName()).log(Level.SEVERE, "Error in readRegisters attempt " + (attempts + 1), e);
+				log.error("Error in writeMultipleRegistersRequest attempt (ModbusException): " + (attempts + 1), e);
 			} catch (Exception e) {
-//                Logger.getLogger(MeterMapService.class.getName()).log(Level.SEVERE, "Error in readRegisters attempt " + (attempts + 1), e);
+				log.error("Error in writeMultipleRegistersRequest attempt (Exception): " + (attempts + 1), e);
 			}
 
-			// Increment retry count and add delay
 			attempts++;
 
 			try {
-				Thread.sleep(100 * (attempts + 1));
+				Thread.sleep(200 * (attempts + 1));
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt(); // Restore interrupted state
 				break;
 			}
 		}
 
-//        Logger.getLogger(ModbusService.class.getName()).log(Level.SEVERE, "Max retries reached for readRegisters");
+		log.warn("Max retries reached for writeMultipleRegistersRequest");
+		return false;
+	}
+	
+	public boolean writeSingleRegistersRequest(short slaveId, int registerRef,
+			RTUTCPMasterConnection masterConnection, Register register) {
+		if (slaveId < 0 || slaveId > 256) {
+			throw new IllegalArgumentException("Invalid input parameters");
+		}
+		int attempts = 0;
+
+		while (attempts < MODBUS_MAX_RETRIES) {
+			try {
+				WriteSingleRegisterRequest request = new WriteSingleRegisterRequest(registerRef, register);
+				request.setUnitID(slaveId);
+
+				// Create transaction
+				ModbusRTUTCPTransaction transaction = new ModbusRTUTCPTransaction(masterConnection);
+				transaction.setRequest(request);
+				transaction.execute(); // This will throw an exception
+
+				// Handle response
+				WriteSingleRegisterResponse response = (WriteSingleRegisterResponse) transaction.getResponse();
+
+				if (response != null && response.getFunctionCode() == request.getFunctionCode()
+						&& response.getUnitID() == request.getUnitID()) {
+					return true; // Successful response
+				} else {
+					log.warn("Invalid response received. Attempt: " + (attempts + 1));
+				}
+			} catch (ModbusException e) {
+				log.error("Error in writeMultipleRegistersRequest attempt (ModbusException): " + (attempts + 1), e);
+			} catch (Exception e) {
+				log.error("Error in writeMultipleRegistersRequest attempt (Exception): " + (attempts + 1), e);
+			}
+
+			attempts++;
+
+			try {
+				Thread.sleep(200 * (attempts + 1));
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt(); // Restore interrupted state
+				break;
+			}
+		}
+
+		log.warn("Max retries reached for writeMultipleRegistersRequest");
 		return false;
 	}
 
-	public RTUTCPMasterConnection getConnectionToModbusServer1(String conAddress) {
-//	        logger.log(Level.INFO, "Method Entry getConnectionToModbusServer at ..." + System.currentTimeMillis());
+	public RTUTCPMasterConnection getConnectionToModbusServer(String conAddress) throws ModbusConnectionException {
+		if (conAddress == null || !conAddress.contains(":")) {
+			throw new ApplicationException("Connection address must be in the format IP:PORT");
+		}
+
+		int idx = conAddress.indexOf(':');
+		String inetAddress = conAddress.substring(0, idx);
+		int port = Integer.parseInt(conAddress.substring(idx + 1));
+
+		if (port < 1 || port > 65535) {
+			throw new ApplicationException("Port number must be between 1 and 65535");
+		}
+
 		RTUTCPMasterConnection con = null;
 		try {
-
-			int port;
-			String inetAddress = conAddress;
-			int idx = inetAddress.indexOf(':');
-			if (idx > 0) {
-				port = Integer.parseInt(inetAddress.substring(idx + 1));
-				inetAddress = inetAddress.substring(0, idx);
-				InetAddress addr = InetAddress.getByName(inetAddress);
-				// Open the connection
-				con = new RTUTCPMasterConnection(addr, port);
-				con.connect();
-				System.out.println("Connection established...");
-			}
-//	        else {
-//	            serverSocket = singletonSocketServer.getServerSocketforPort(conAddress);
-////	            startServer(Integer.parseInt(conAddress));
-//	            Thread.sleep(1000);
-//	            con.getConnection(serverSocket);
-//	        }
-//	        logger.log(Level.INFO, "Method Exit getConnectionToModbusServer at ..." + System.currentTimeMillis());
+			InetAddress addr = InetAddress.getByName(inetAddress);
+			con = new RTUTCPMasterConnection(addr, port);
+			con.connect();
+			log.info("Connection established to " + inetAddress + " on port " + port);
+			return con;
+		} catch (UnknownHostException e) {
+			log.warn("Invalid IP address: " + inetAddress);
+			throw new ModbusConnectionException("Invalid IP address: " + inetAddress, e);
+		} catch (IOException e) {
+			log.warn("Unable to connect to " + inetAddress + ":" + port);
+			throw new ModbusConnectionException("Unable to connect to " + inetAddress + ":" + port, e);
 		} catch (Exception e) {
+			log.warn("Something went wrong to connect to " + inetAddress + ":" + port);
 			e.printStackTrace();
-			con = new RTUTCPMasterConnection(); 
-		}
-		return con;
-	}
-
-//	logger.info("Attempting to connect to Modbus server at " + inetAddress + ":" + port);
-//	logger.severe("Connection failed: " + e.getMessage());
-
-	
-	public RTUTCPMasterConnection getConnectionToModbusServer(String conAddress) throws CautionException{
-	    if (conAddress == null || !conAddress.contains(":")) {
-	        throw new ApplicationException("Connection address must be in the format IP:PORT");
-	    }
-
-	    int idx = conAddress.indexOf(':');
-	    String inetAddress = conAddress.substring(0, idx);
-	    int port = Integer.parseInt(conAddress.substring(idx + 1));
-
-	    if (port < 1 || port > 65535) {
-	        throw new ApplicationException("Port number must be between 1 and 65535");
-	    }
-
-	    RTUTCPMasterConnection con = null;
-	    try {
-	        InetAddress addr = InetAddress.getByName(inetAddress);
-	        con = new RTUTCPMasterConnection(addr, port);
-	        con.connect();
-	        log.info("Connection established to " + inetAddress + " on port " + port);
-	        return con;
-	    } catch (UnknownHostException e) {
-	        log.error("Invalid IP address: " + inetAddress);
-	        throw new CautionException("Invalid IP address: " + inetAddress, e);
-	    } catch (IOException e) {
-	        log.error("Unable to connect to " + inetAddress + ":" + port);
-	        throw new CautionException("Unable to connect to " + inetAddress + ":" + port, e);
-		} catch (Exception e) {
-			log.error("Something went wrong to connect to " + inetAddress + ":" + port);
-			e.printStackTrace();
-			throw new CautionException("Something went wrong to connect to " + inetAddress + ":" + port, e);
+			throw new ModbusConnectionException("Something went wrong to connect to " + inetAddress + ":" + port, e);
 		}
 	}
-
 
 }

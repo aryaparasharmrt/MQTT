@@ -4,11 +4,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import com.dwellsmart.constants.MeterType;
-import com.dwellsmart.exception.ApplicationException;
-import com.dwellsmart.exception.CautionException;
 import com.dwellsmart.modbus.IMeter;
+import com.dwellsmart.modbus.meter.SumeruVerde;
 import com.dwellsmart.modbus.meter.SunStarDS;
-import com.dwellsmart.modbus.meter.SunStarDSPP;
 import com.dwellsmart.service.CacheService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -29,17 +27,24 @@ public class MeterFactory {
 
 	public IMeter getMeter(MeterType meterType, short meterId, RTUTCPMasterConnection connection) {
 		switch (meterType) {
-		case SUNSTAR_DS:    //Meter Type 1
-			return applicationContext.getBean(SunStarDS.class, meterId, cacheService.getMeterAddressMap(meterType),connection);
-		case SUNSTAR_DS_PP:  //Meter Type 9
-			return applicationContext.getBean(SunStarDSPP.class, meterId, cacheService.getMeterAddressMap(meterType),connection);
-		case ENERTRAK:		//Meter Type 2
+		
+		case SUNSTAR_DS: // Meter Type 1
+		case SUNSTAR_DS_PP: // Meter Type 9
+			return applicationContext.getBean(SunStarDS.class, meterId, cacheService.getMeterAddressMap(meterType), connection);
+			
+		case ENERTRAK: // Meter Type 2
+			log.warn("ENERTRAK Meter type not implemented yet.");
 			return null;
+			
+		case SUMERU_VERDE: // Meter Type 4
+		case SUMERU_VERDE_MSB: // Meter Type 8
+			return applicationContext.getBean(SumeruVerde.class, meterId, cacheService.getMeterAddressMap(meterType), connection);
+			
 		case UNKNOWN:
-			 log.warn("Unknown MeterType ID received. Skipping specific actions.");
-			 return null;
+			log.warn("Unknown MeterType ID received. Skipping specific actions.");
+			return null;
+			
 		default:
-//			throw new CautionException("Unknown meter type or not implemented yet.");
 			log.warn("Unknown meter type or not implemented yet.");
 			return null;
 		}

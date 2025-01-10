@@ -8,9 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public enum MeterType {
+	
 	SUNSTAR_DS(1, "Sun Star DwellSMART V9"),
 	ENERTRAK(2, "Sun Star Enertrak V5"),
-	SUNSTAR_DS_PP(9, "Sun Star DwellSMART V9 Password Protected"), 
+	SUNSTAR_DS_PP(9, "Sun Star DwellSMART V9 Password Protected"),
+	SUMERU_VERDE(4,"Sumeru Verde"),
+	SUMERU_VERDE_MSB(8,"Sumeru Verde MSB First"),
+	
+	LNT1P(5,"LnT Single Phase"),
 	UNKNOWN(-1,"Unknown meter for this client");
 
 	@Getter
@@ -26,13 +31,13 @@ public enum MeterType {
 	}
 
 	@JsonCreator
-	public static MeterType fromId(int id) {  // Method to find MeterType by ID
+	public static MeterType fromId(int id) { // Method to find MeterType by ID
 		for (MeterType type : MeterType.values()) {
 			if (type.id == id) {
 				return type;
 			}
 		}
 		log.warn("Invalid MeterType ID received: {}", id);
-	    return MeterType.UNKNOWN; 
+		return MeterType.UNKNOWN;
 	}
 }

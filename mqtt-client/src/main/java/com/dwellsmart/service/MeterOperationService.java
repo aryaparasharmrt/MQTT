@@ -11,7 +11,7 @@ import com.dwellsmart.dto.MeterData;
 import com.dwellsmart.dto.MeterInfo;
 import com.dwellsmart.dto.MeterOperationPayload;
 import com.dwellsmart.exception.ApplicationException;
-import com.dwellsmart.exception.CautionException;
+import com.dwellsmart.exception.ModbusConnectionException;
 import com.dwellsmart.factory.MeterFactory;
 import com.dwellsmart.modbus.IMeter;
 
@@ -30,25 +30,26 @@ public class MeterOperationService {
 
 	public void processOperation(MeterOperationPayload request) {
 		RTUTCPMasterConnection connection = new RTUTCPMasterConnection();
+		StringBuilder messageResponse = new StringBuilder();
 		OperationType operationType = request.getOpType();
 		boolean isSuccess = false;
 		try {
 			connection = modbusService.getConnectionToModbusServer(request.getIpAddress());
 			request.setIpStatus(connection != null && connection.isConnected());
-//	        if (!connection.isConnected()) {
-//	            request.setMessage("Connection to server failed");
-//	            request.setMeters(null);
-//	            return;
-//	        }
+			
 			List<MeterInfo> meterInfos = request.getMeters();
 			for (MeterInfo meterInfo : meterInfos) {
 				MeterData meterData = meterInfo.getData();
-				IMeter meter = meterFactory.getMeter(meterInfo.getMetersTypeId(), meterInfo.getMeterId(), connection);
+				IMeter meter = meterFactory.getMeter(meterInfo.getMeterTypeId(), meterInfo.getMeterId(), connection);
 
 				if (meter == null) {
+					messageResponse = messageResponse.append("\nMeterTypeId: " + meterInfo.getMeterTypeId()
+							+ ", IpAddress: " + request.getIpAddress() + ", Meter not found or implemented.");
 					meterInfo.setData(MeterData.builder().status(false).build());
+					request.setMessage(messageResponse.toString());
 					continue;
 				}
+				
 				switch (operationType) {
 				case W_PP:
 
@@ -106,11 +107,10 @@ public class MeterOperationService {
 				}
 
 			}
-		} catch (CautionException e) {
+		} catch (ModbusConnectionException e) {
 			// Return Response in dynamic topic(For not getting connection, And more...) //We will cover more cases
-			request.setMessage(e.getMessage());
-			request.setMeters(null);
-
+			request.setMessage(messageResponse.append("\n"+e.getMessage()).toString());
+			request.setMeters(null); 
 		} catch (ApplicationException e) {
 			throw e;
 		} catch (Exception e) {
@@ -125,22 +125,4 @@ public class MeterOperationService {
 
 	}
 
-//	private void handleReadOperation(MeterInfo info, RTUTCPMasterConnection connection) {
-//		System.out.println("Performing READ operation on meters...");
-//		System.out.println("Reading data from Meter: " + info.getMetersTypeId() + ", Meter ID: " + info.getMeterId());
-//		
-//	}
-//
-//	private void handleConnectOperation(MeterInfo info, RTUTCPMasterConnection connection) {
-//		System.out.println("Performing CONNECT operation on meters...");
-//		System.out.println("Connecting Meter: " + info.getMetersTypeId() + ", Meter ID: " + info.getMeterId());
-//
-//	}
-
-//	private void handleDisconnectOperation(MeterInfo info, RTUTCPMasterConnection connection) {
-//		System.out.println("Performing DISCONNECT operation on meters...");
-//		System.out.println("Disconnecting Meter: " + info.getMetersTypeId() + ", Meter ID: " + info.getMeterId());
-//
-//		
-//	}
 }

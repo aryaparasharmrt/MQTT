@@ -63,67 +63,72 @@ public class SumeruVerde extends AbstractMeter {
 				// Prepare other request for other parameters
 				Thread.sleep(500);
 
-				res = modbusService.readMultipleRegistersRequest(meterId, addressMap.getOtherRegisterAddress(),
-						addressMap.getOtherRegistersCount(), connection);
-				if (null != res) {
+				try {
+					res = modbusService.readMultipleRegistersRequest(meterId, addressMap.getOtherRegisterAddress(),
+							addressMap.getOtherRegistersCount(), connection);
+					if (null != res) {
 
-					BigDecimal vPhaseR = readSingleRegister(res.getRegister(0)).divide(new BigDecimal(100));
-					BigDecimal vPhaseY = readSingleRegister(res.getRegister(1)).divide(new BigDecimal(100));
-					BigDecimal vPhaseB = readSingleRegister(res.getRegister(2)).divide(new BigDecimal(100));
-					BigDecimal cPhaseR = readSingleRegister(res.getRegister(3)).divide(new BigDecimal(100));
-					BigDecimal cPhaseY = readSingleRegister(res.getRegister(4)).divide(new BigDecimal(100));
-					BigDecimal cPhaseB = readSingleRegister(res.getRegister(5)).divide(new BigDecimal(100));
-					String powerKW = readSingleRegister(res.getRegister(6)).divide(new BigDecimal(100)).toString();
-					String powerKVA = readSingleRegister(res.getRegister(8)).divide(new BigDecimal(100)).toString();
-					String powerFactor = (addressMap.isEnableMsbFirst())
-							? readSingleRegisterMSBFirst(res.getRegister(9)).divide(new BigDecimal(1000)).toString()
-							: readSingleRegister(res.getRegister(9)).divide(new BigDecimal(1000)).toString();
+						BigDecimal vPhaseR = readSingleRegister(res.getRegister(0)).divide(new BigDecimal(100));
+						BigDecimal vPhaseY = readSingleRegister(res.getRegister(1)).divide(new BigDecimal(100));
+						BigDecimal vPhaseB = readSingleRegister(res.getRegister(2)).divide(new BigDecimal(100));
+						BigDecimal cPhaseR = readSingleRegister(res.getRegister(3)).divide(new BigDecimal(100));
+						BigDecimal cPhaseY = readSingleRegister(res.getRegister(4)).divide(new BigDecimal(100));
+						BigDecimal cPhaseB = readSingleRegister(res.getRegister(5)).divide(new BigDecimal(100));
+						String powerKW = readSingleRegister(res.getRegister(6)).divide(new BigDecimal(100)).toString();
+						String powerKVA = readSingleRegister(res.getRegister(8)).divide(new BigDecimal(100)).toString();
+						String powerFactor = (addressMap.isEnableMsbFirst())
+								? readSingleRegisterMSBFirst(res.getRegister(9)).divide(new BigDecimal(1000)).toString()
+								: readSingleRegister(res.getRegister(9)).divide(new BigDecimal(1000)).toString();
 
-					String frequency = readSingleRegister(res.getRegister(10)).divide(new BigDecimal(1000)).toString();
+						String frequency = readSingleRegister(res.getRegister(10)).divide(new BigDecimal(1000))
+								.toString();
 
-					meterReading.setVPhaseR(vPhaseR.doubleValue());
-					meterReading.setVPhaseY(vPhaseY.doubleValue());
-					meterReading.setVPhaseB(vPhaseB.doubleValue());
-					meterReading.setCPhaseR(cPhaseR.doubleValue());
-					meterReading.setCPhaseY(cPhaseY.doubleValue());
-					meterReading.setCPhaseB(cPhaseB.doubleValue());
-					meterReading.setPowerKW(Double.valueOf(powerKW));
-					meterReading.setPowerKva(Double.valueOf(powerKVA));
-					meterReading.setPowerFactor(Double.valueOf(powerFactor));
-					meterReading.setFrequency(Double.valueOf(frequency));
+						meterReading.setVPhaseR(vPhaseR.doubleValue());
+						meterReading.setVPhaseY(vPhaseY.doubleValue());
+						meterReading.setVPhaseB(vPhaseB.doubleValue());
+						meterReading.setCPhaseR(cPhaseR.doubleValue());
+						meterReading.setCPhaseY(cPhaseY.doubleValue());
+						meterReading.setCPhaseB(cPhaseB.doubleValue());
+						meterReading.setPowerKW(Double.valueOf(powerKW));
+						meterReading.setPowerKva(Double.valueOf(powerKVA));
+						meterReading.setPowerFactor(Double.valueOf(powerFactor));
+						meterReading.setFrequency(Double.valueOf(frequency));
 
-					// Read MSB LSB of register 25 and MSB of register 26 to compute Relay Status of
-					// each relay
-					meterReading.setRelayStatus(((readSingleRegisterMSB(res.getRegister(25)).toString()
-							+ readSingleRegisterLSB(res.getRegister(25)).toString()
-							+ readSingleRegisterMSB(res.getRegister(26)).toString()).equals("000")) ? "OFF" : "ON");
+						// Read MSB LSB of register 25 and MSB of register 26 to compute Relay Status of
+						// each relay
+						meterReading.setRelayStatus(((readSingleRegisterMSB(res.getRegister(25)).toString()
+								+ readSingleRegisterLSB(res.getRegister(25)).toString()
+								+ readSingleRegisterMSB(res.getRegister(26)).toString()).equals("000")) ? "OFF" : "ON");
 
-					// Read LSB of register 26 to compute Energy Source
-					Thread.sleep(1000);
+						// Read LSB of register 26 to compute Energy Source
+						Thread.sleep(1000);
 
-					res = modbusService.readMultipleRegistersRequest(meterId,
-							METER_TYPE_SUMERU_EBDG_SENSING_REG_ADDRESS, 1, connection);
-					meterReading.setEnergySource(
-							readSingleRegisterMSB(res.getRegister(0)).equals(new BigDecimal(BigInteger.ONE)) ? "DG"
-									: "EB");
-					Thread.sleep(1000);
+						res = modbusService.readMultipleRegistersRequest(meterId,
+								METER_TYPE_SUMERU_EBDG_SENSING_REG_ADDRESS, 1, connection);
+						meterReading.setEnergySource(
+								readSingleRegisterMSB(res.getRegister(0)).equals(new BigDecimal(BigInteger.ONE)) ? "DG"
+										: "EB");
+						Thread.sleep(1000);
 
-					res = modbusService.readMultipleRegistersRequest(meterId, addressMap.getLoadRegisterAddress(), 2,
-							connection);
-					if (addressMap.isEnableMsbFirst()) {
+						res = modbusService.readMultipleRegistersRequest(meterId, addressMap.getLoadRegisterAddress(),
+								2, connection);
+						if (addressMap.isEnableMsbFirst()) {
 
-						meterReading.setEbLoad(readSingleRegisterMSBFirst(res.getRegister(0)).divide(new BigDecimal(10))
-								.doubleValue());
-						meterReading.setDgLoad(readSingleRegisterMSBFirst(res.getRegister(1)).divide(new BigDecimal(10))
-								.doubleValue());
+							meterReading.setEbLoad(readSingleRegisterMSBFirst(res.getRegister(0))
+									.divide(new BigDecimal(10)).doubleValue());
+							meterReading.setDgLoad(readSingleRegisterMSBFirst(res.getRegister(1))
+									.divide(new BigDecimal(10)).doubleValue());
 
-					} else {
-						meterReading.setEbLoad(
-								readSingleRegister(res.getRegister(0)).divide(new BigDecimal(10)).doubleValue());
-						meterReading.setDgLoad(
-								readSingleRegister(res.getRegister(1)).divide(new BigDecimal(10)).doubleValue());
+						} else {
+							meterReading.setEbLoad(
+									readSingleRegister(res.getRegister(0)).divide(new BigDecimal(10)).doubleValue());
+							meterReading.setDgLoad(
+									readSingleRegister(res.getRegister(1)).divide(new BigDecimal(10)).doubleValue());
+						}
+
 					}
-
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 
 				meterReading.setReadingDateTime(LocalDateTime.now().toString());

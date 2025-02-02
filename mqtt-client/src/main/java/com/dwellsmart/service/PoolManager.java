@@ -33,7 +33,7 @@ public class PoolManager {
 	@Autowired
 	private MeterOperationService meterOperationService;
 
-	private volatile int corePoolSize = 5;
+	private volatile int corePoolSize = 50;
 	private volatile int maximumPoolSize = 100;
 	private volatile long keepAliveTime = 30L; // In minutes
 	private volatile RejectedExecutionHandler handler = new RejectedTask();

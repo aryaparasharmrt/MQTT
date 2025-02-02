@@ -55,9 +55,9 @@ public class MeterOperationService {
 
 					break;
 				case W_LOAD:
-					if (meterInfos.size() > 1) {
-						throw new ApplicationException("At a time only one meter allow to process this operation");
-					} //we wil think later for this operation
+//					if (meterInfos.size() > 1) {
+//						throw new ApplicationException("At a time only one meter allow to process this operation");
+//					} //we wil think later for this operation
 					// Validate that the data object is present and `ebLoad` is not null
 					if (meterData == null || meterData.getEbLoad() == null) {
 						throw new ApplicationException("Data is required for operation: " + operationType);
@@ -78,9 +78,9 @@ public class MeterOperationService {
 					break;
 
 				case DISCONNECT:
-					if(meterInfos.size()>1) {
-						throw new ApplicationException("At a time only one meter allow to process this operation");
-					}  //we wil think later for this operation
+//					if(meterInfos.size()>1) {
+//						throw new ApplicationException("At a time only one meter allow to process this operation");
+//					}  //we wil think later for this operation
 					if (meterData != null) {
 						meterData.setStatus(meter.disconnect());
 					} else {

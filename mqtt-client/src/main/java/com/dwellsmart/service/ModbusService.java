@@ -232,6 +232,7 @@ public class ModbusService {
 		try {
 			InetAddress addr = InetAddress.getByName(inetAddress);
 			con = new RTUTCPMasterConnection(addr, port);
+//			con.setTimeout(20);
 			con.connect();
 			log.info("Connection established to " + inetAddress + " on port " + port);
 			return con;

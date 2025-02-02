@@ -98,97 +98,102 @@ public class SunStarDS extends AbstractMeter {
 				// Prepare other request for other parameters
 				Thread.sleep(800);
 
-				res = modbusService.readMultipleRegistersRequest(meterId, addressMap.getOtherRegisterAddress(),
-						addressMap.getOtherRegistersCount(), connection);
-				if (null != res) {
+				try { //this try for handling other parameters exception Will Work in future
+					res = modbusService.readMultipleRegistersRequest(meterId, addressMap.getOtherRegisterAddress(),
+							addressMap.getOtherRegistersCount(), connection);
+					if (null != res) {
 
-					List<BigDecimal> parametersArray = new ArrayList<>();
-					int counter = 0;
-					for (int i = 0; i < 26; i++) {
-						if (i == 19) {
-							ByteArrayOutputStream outputStream1 = new ByteArrayOutputStream();
-							ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
-							outputStream1.write(res.getRegister(counter).toBytes());
-							counter++;
-							outputStream2.write(res.getRegister(counter).toBytes());
-							counter++;
-							byte c1[] = outputStream1.toByteArray();
-							byte c2[] = outputStream2.toByteArray();
+						List<BigDecimal> parametersArray = new ArrayList<>();
+						int counter = 0;
+						for (int i = 0; i < 26; i++) {
+							if (i == 19) {
+								ByteArrayOutputStream outputStream1 = new ByteArrayOutputStream();
+								ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
+								outputStream1.write(res.getRegister(counter).toBytes());
+								counter++;
+								outputStream2.write(res.getRegister(counter).toBytes());
+								counter++;
+								byte c1[] = outputStream1.toByteArray();
+								byte c2[] = outputStream2.toByteArray();
 
-							BigInteger bi1 = new BigInteger(1, c1);
-							BigDecimal bd1 = new BigDecimal(bi1);
-							BigInteger bi2 = new BigInteger(1, c2);
-							BigDecimal bd2 = new BigDecimal(bi2);
-							parametersArray.add(bd1);
-							parametersArray.add(bd2);
-						} else if (i == 21) {
+								BigInteger bi1 = new BigInteger(1, c1);
+								BigDecimal bd1 = new BigDecimal(bi1);
+								BigInteger bi2 = new BigInteger(1, c2);
+								BigDecimal bd2 = new BigDecimal(bi2);
+								parametersArray.add(bd1);
+								parametersArray.add(bd2);
+							} else if (i == 21) {
 
-							ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
-							counter++;
-							byte signBit = res.getRegister(counter).toBytes()[0];
-							int sign = signBit;
-							outputStream2.write(res.getRegister(counter).toBytes());
-							counter++;
-							parametersArray.add(new BigDecimal(sign));
-							byte c2[] = outputStream2.toByteArray();
-							byte cx = c2[1];
-							int low = cx & 0xf;
-							parametersArray.add(new BigDecimal(low));
+								ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
+								counter++;
+								byte signBit = res.getRegister(counter).toBytes()[0];
+								int sign = signBit;
+								outputStream2.write(res.getRegister(counter).toBytes());
+								counter++;
+								parametersArray.add(new BigDecimal(sign));
+								byte c2[] = outputStream2.toByteArray();
+								byte cx = c2[1];
+								int low = cx & 0xf;
+								parametersArray.add(new BigDecimal(low));
 
-						} else if (i == 24) {
+							} else if (i == 24) {
 
-							ByteArrayOutputStream outputStream1 = new ByteArrayOutputStream();
-							ByteArrayOutputStream outputStreamV = new ByteArrayOutputStream();
-							counter++;
-							outputStreamV.write(res.getRegister(counter).toBytes()[0]);
-							outputStream1.write(res.getRegister(counter).toBytes()[1]);
-							counter++;
-							outputStream1.write(res.getRegister(counter).toBytes());
+								ByteArrayOutputStream outputStream1 = new ByteArrayOutputStream();
+								ByteArrayOutputStream outputStreamV = new ByteArrayOutputStream();
+								counter++;
+								outputStreamV.write(res.getRegister(counter).toBytes()[0]);
+								outputStream1.write(res.getRegister(counter).toBytes()[1]);
+								counter++;
+								outputStream1.write(res.getRegister(counter).toBytes());
 
-							byte c1[] = outputStream1.toByteArray();
-							BigInteger bi1 = new BigInteger(1, c1);
-							int serial = bi1.intValue();
-							parametersArray
-									.add(new BigDecimal(new BigInteger(1, outputStreamV.toByteArray()).intValue())
-											.divide(BigDecimal.TEN));
-							parametersArray.add(new BigDecimal(serial));
+								byte c1[] = outputStream1.toByteArray();
+								BigInteger bi1 = new BigInteger(1, c1);
+								int serial = bi1.intValue();
+								parametersArray
+										.add(new BigDecimal(new BigInteger(1, outputStreamV.toByteArray()).intValue())
+												.divide(BigDecimal.TEN));
+								parametersArray.add(new BigDecimal(serial));
 
-						} else {
+							} else {
 
-							ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
-							outputStream2.write(res.getRegister(counter).toBytes());
-							counter++;
-							outputStream2.write(res.getRegister(counter).toBytes());
-							counter++;
-							byte c2[] = outputStream2.toByteArray();
-							BigInteger bi2 = new BigInteger(1, c2);
-							BigDecimal bd2 = new BigDecimal(bi2);
-							parametersArray.add(bd2);
+								ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
+								outputStream2.write(res.getRegister(counter).toBytes());
+								counter++;
+								outputStream2.write(res.getRegister(counter).toBytes());
+								counter++;
+								byte c2[] = outputStream2.toByteArray();
+								BigInteger bi2 = new BigInteger(1, c2);
+								BigDecimal bd2 = new BigDecimal(bi2);
+								parametersArray.add(bd2);
+							}
 						}
-					}
-					meterReading.setVPhaseB(parametersArray.get(0).divide(new BigDecimal(10)).doubleValue());
-					meterReading.setVPhaseY(parametersArray.get(1).divide(new BigDecimal(10)).doubleValue());
-					meterReading.setVPhaseR(parametersArray.get(2).divide(new BigDecimal(10)).doubleValue());
-					meterReading.setCPhaseR(parametersArray.get(3).divide(new BigDecimal(1000)).doubleValue());
-					meterReading.setCPhaseY(parametersArray.get(4).divide(new BigDecimal(1000)).doubleValue());
-					meterReading.setCPhaseB(parametersArray.get(5).divide(new BigDecimal(1000)).doubleValue());
-					meterReading.setPFactorR(parametersArray.get(6).divide(new BigDecimal(1000)).doubleValue());
-					meterReading.setPFactorY(parametersArray.get(7).divide(new BigDecimal(1000)).doubleValue());
-					meterReading.setPFactorB(parametersArray.get(8).divide(new BigDecimal(1000)).doubleValue());
-					meterReading.setFrequency(parametersArray.get(9).divide(new BigDecimal(10)).doubleValue());
-					meterReading.setKWPhaseR(parametersArray.get(10).divide(new BigDecimal(1000)).doubleValue());
-					meterReading.setKWPhaseY(parametersArray.get(11).divide(new BigDecimal(1000)).doubleValue());
-					meterReading.setKWPhaseB(parametersArray.get(12).divide(new BigDecimal(1000)).doubleValue());
-					meterReading.setKvaPhaseR(parametersArray.get(13).divide(new BigDecimal(1000)).doubleValue());
-					meterReading.setKvaPhaseY(parametersArray.get(14).divide(new BigDecimal(1000)).doubleValue());
-					meterReading.setKvaPhaseB(parametersArray.get(15).divide(new BigDecimal(1000)).doubleValue());
-					meterReading.setPowerFactor(parametersArray.get(16).divide(new BigDecimal(1000)).doubleValue());
-					meterReading.setPowerKW(parametersArray.get(17).divide(new BigDecimal(1000)).doubleValue());
-					meterReading.setPowerKva(parametersArray.get(18).divide(new BigDecimal(1000)).doubleValue());
-					meterReading.setFirmwareVersion(parametersArray.get(26).toString());
-					meterReading.setSerialNo(parametersArray.get(27).toString());
-					meterReading.setEnergySource(parametersArray.get(23).toString());
+						meterReading.setVPhaseB(parametersArray.get(0).divide(new BigDecimal(10)).doubleValue());
+						meterReading.setVPhaseY(parametersArray.get(1).divide(new BigDecimal(10)).doubleValue());
+						meterReading.setVPhaseR(parametersArray.get(2).divide(new BigDecimal(10)).doubleValue());
+						meterReading.setCPhaseR(parametersArray.get(3).divide(new BigDecimal(1000)).doubleValue());
+						meterReading.setCPhaseY(parametersArray.get(4).divide(new BigDecimal(1000)).doubleValue());
+						meterReading.setCPhaseB(parametersArray.get(5).divide(new BigDecimal(1000)).doubleValue());
+						meterReading.setPFactorR(parametersArray.get(6).divide(new BigDecimal(1000)).doubleValue());
+						meterReading.setPFactorY(parametersArray.get(7).divide(new BigDecimal(1000)).doubleValue());
+						meterReading.setPFactorB(parametersArray.get(8).divide(new BigDecimal(1000)).doubleValue());
+						meterReading.setFrequency(parametersArray.get(9).divide(new BigDecimal(10)).doubleValue());
+						meterReading.setKWPhaseR(parametersArray.get(10).divide(new BigDecimal(1000)).doubleValue());
+						meterReading.setKWPhaseY(parametersArray.get(11).divide(new BigDecimal(1000)).doubleValue());
+						meterReading.setKWPhaseB(parametersArray.get(12).divide(new BigDecimal(1000)).doubleValue());
+						meterReading.setKvaPhaseR(parametersArray.get(13).divide(new BigDecimal(1000)).doubleValue());
+						meterReading.setKvaPhaseY(parametersArray.get(14).divide(new BigDecimal(1000)).doubleValue());
+						meterReading.setKvaPhaseB(parametersArray.get(15).divide(new BigDecimal(1000)).doubleValue());
+						meterReading.setPowerFactor(parametersArray.get(16).divide(new BigDecimal(1000)).doubleValue());
+						meterReading.setPowerKW(parametersArray.get(17).divide(new BigDecimal(1000)).doubleValue());
+						meterReading.setPowerKva(parametersArray.get(18).divide(new BigDecimal(1000)).doubleValue());
+						meterReading.setFirmwareVersion(parametersArray.get(26).toString());
+						meterReading.setSerialNo(parametersArray.get(27).toString());
+						meterReading.setEnergySource(parametersArray.get(23).toString());
 
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					// this exception thrown in reading additional parameters
 				}
 
 				meterReading.setReadingDateTime(LocalDateTime.now().toString());
@@ -197,6 +202,7 @@ public class SunStarDS extends AbstractMeter {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			meterReading = null; // will improve this logic in future versions
 		}
 
 		return meterReading;
@@ -204,7 +210,7 @@ public class SunStarDS extends AbstractMeter {
 
 	@Override
 	public boolean setUnitId(Short unitId) {
-		
+
 		if (addressMap.getMeterType() == MeterType.SUNSTAR_DS_PP) {
 
 			String hexString = Integer.toHexString(unitId);
@@ -249,7 +255,7 @@ public class SunStarDS extends AbstractMeter {
 		return super.setLoad(ebLoadReg, dgLoadReg);
 
 	}
-	
+
 	@Override
 	public boolean connect() {
 
@@ -280,7 +286,7 @@ public class SunStarDS extends AbstractMeter {
 		return super.connect();
 
 	}
-	
+
 	@Override
 	public boolean disconnect() {
 
@@ -306,7 +312,7 @@ public class SunStarDS extends AbstractMeter {
 			}
 			return isProtectionModeEnabled;
 		}
-		
+
 		return super.disconnect();
 
 	}
@@ -316,45 +322,45 @@ public class SunStarDS extends AbstractMeter {
 			Register[] serialPasswordRegister = SunStarDS.serialToPasswordRegisters(Integer.parseInt(serialNo));
 
 			return modbusService.writeMultipleRegistersRequest(meterId, addressMap.getValidatorRegisterAddress(),
-					connection,serialPasswordRegister);
+					connection, serialPasswordRegister);
 
 		}
 		return false;
 
 	}
-	
+
 	private static Register[] serialToPasswordRegisters(int serial) {
-        String numberString = String.valueOf(serial); // Replace this with your 8-digit number as a string
-        while (numberString.length() < 8) {
-            numberString = "0" + numberString;
-        }
+		String numberString = String.valueOf(serial); // Replace this with your 8-digit number as a string
+		while (numberString.length() < 8) {
+			numberString = "0" + numberString;
+		}
 
-        // Extract the 6 least significant digits
-        String lsbDigits = numberString.substring(2);
+		// Extract the 6 least significant digits
+		String lsbDigits = numberString.substring(2);
 
-        Register[] registers = new Register[lsbDigits.length() / 2];
-        int registerIndex = 0;
-        // Convert each digit to a character and print its ASCII value
-        for (int i = 0; i < lsbDigits.length(); i += 2) {
-            char firstDigit = lsbDigits.charAt(i);
-            char secondDigit = (i + 1 < lsbDigits.length()) ? lsbDigits.charAt(i + 1) : '0';
+		Register[] registers = new Register[lsbDigits.length() / 2];
+		int registerIndex = 0;
+		// Convert each digit to a character and print its ASCII value
+		for (int i = 0; i < lsbDigits.length(); i += 2) {
+			char firstDigit = lsbDigits.charAt(i);
+			char secondDigit = (i + 1 < lsbDigits.length()) ? lsbDigits.charAt(i + 1) : '0';
 
-            char firstChar = (char) (firstDigit + 'A' - '0');
-            char secondChar = (char) (secondDigit + 'A' - '0');
+			char firstChar = (char) (firstDigit + 'A' - '0');
+			char secondChar = (char) (secondDigit + 'A' - '0');
 
-            String asciiHex = Integer.toHexString((int) firstChar) + Integer.toHexString((int) secondChar);
-            int asciiDecimal = Integer.parseInt(asciiHex, 16);
+			String asciiHex = Integer.toHexString((int) firstChar) + Integer.toHexString((int) secondChar);
+			int asciiDecimal = Integer.parseInt(asciiHex, 16);
 
 //            System.out.println("Pair " + (i / 2 + 1) + " being " + firstChar + secondChar
 //                    + ", hex number " + asciiHex + " becomes " + asciiDecimal);
-            Register register = new SimpleRegister(asciiDecimal);
+			Register register = new SimpleRegister(asciiDecimal);
 
-            // Add the Register object to the array
-            registers[registerIndex] = register;
-            registerIndex++;
-        }
-        return registers;
+			// Add the Register object to the array
+			registers[registerIndex] = register;
+			registerIndex++;
+		}
+		return registers;
 
-    }
+	}
 
 }

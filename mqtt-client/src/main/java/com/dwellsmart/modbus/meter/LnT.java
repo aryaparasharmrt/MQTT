@@ -56,23 +56,27 @@ public class LnT extends AbstractMeter {
 				// Prepare other request for other parameters
 				Thread.sleep(500);
 
-				res = modbusService.readInputRegistersRequest(meterId, addressMap.getOtherRegisterAddress(),
-						addressMap.getOtherRegistersCount(), connection);
-				if (null != res) {
+				try { // This handling for reading additional parameter will work in future
+					res = modbusService.readInputRegistersRequest(meterId, addressMap.getOtherRegisterAddress(),
+							addressMap.getOtherRegistersCount(), connection);
+					if (null != res) {
 
-					double vPhaseR = readSingleRegister(res, 0).divide(new BigDecimal(100)).doubleValue();
-					double cPhaseR = readSingleRegister(res, 1).divide(new BigDecimal(100)).doubleValue();
+						double vPhaseR = readSingleRegister(res, 0).divide(new BigDecimal(100)).doubleValue();
+						double cPhaseR = readSingleRegister(res, 1).divide(new BigDecimal(100)).doubleValue();
 
-					meterReading.setVPhaseR(vPhaseR);
-					meterReading.setCPhaseR(cPhaseR);
-					meterReading.setKWPhaseR(readTwoRegisters(res, 3).divide(new BigDecimal(10000)).doubleValue());
-					meterReading.setKvaPhaseR(readTwoRegisters(res, 5).divide(new BigDecimal(10000)).doubleValue());
-					meterReading.setFrequency(readSingleRegister(res, 7).divide(new BigDecimal(10)).doubleValue());
-					meterReading.setPFactorR(readSingleRegister(res, 8).divide(new BigDecimal(100)).doubleValue());
-					meterReading.setPowerKW(meterReading.getKWPhaseR());
-					meterReading.setPowerKva(meterReading.getKvaPhaseR());
-					meterReading.setPowerFactor(meterReading.getPFactorR());
-					meterReading.setEnergySource("EB");
+						meterReading.setVPhaseR(vPhaseR);
+						meterReading.setCPhaseR(cPhaseR);
+						meterReading.setKWPhaseR(readTwoRegisters(res, 3).divide(new BigDecimal(10000)).doubleValue());
+						meterReading.setKvaPhaseR(readTwoRegisters(res, 5).divide(new BigDecimal(10000)).doubleValue());
+						meterReading.setFrequency(readSingleRegister(res, 7).divide(new BigDecimal(10)).doubleValue());
+						meterReading.setPFactorR(readSingleRegister(res, 8).divide(new BigDecimal(100)).doubleValue());
+						meterReading.setPowerKW(meterReading.getKWPhaseR());
+						meterReading.setPowerKva(meterReading.getKvaPhaseR());
+						meterReading.setPowerFactor(meterReading.getPFactorR());
+						meterReading.setEnergySource("EB");
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 
 				meterReading.setReadingDateTime(LocalDateTime.now().toString());

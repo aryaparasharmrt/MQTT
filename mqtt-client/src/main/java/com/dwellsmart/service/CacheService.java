@@ -119,14 +119,14 @@ public class CacheService {
 
 		case ENERTRAK:
 			addressMap.setMeterType(meterType);
-			addressMap.setKwhRegisterAddress(16508);
-			addressMap.setKwhRegisterAddressesCount(98);
+			addressMap.setKwhRegisterAddress(16555);
+			addressMap.setKwhRegisterAddressesCount(4);
 			addressMap.setConnectRegisterAddress(2);
 			addressMap.setConnectRegisterValue(20560);
 			addressMap.setDisconnectRegisterAddress(2);
 			addressMap.setDisconnectRegisterValue(0);
 			addressMap.setOtherRegisterAddress(20535);
-			addressMap.setOtherRegistersCount(52);
+			addressMap.setOtherRegistersCount(44);
 			addressMap.setDgKwhRegisterAddress(0);
 			addressMap.setLoadRegisterAddress(17);
 			addressMap.setOverloadattemptsRegAddress(49);

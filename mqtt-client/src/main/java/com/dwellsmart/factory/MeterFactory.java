@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import com.dwellsmart.constants.MeterType;
 import com.dwellsmart.modbus.IMeter;
+import com.dwellsmart.modbus.meter.Enertrak;
 import com.dwellsmart.modbus.meter.LnT;
 import com.dwellsmart.modbus.meter.SumeruVerde;
 import com.dwellsmart.modbus.meter.SunStarDS;
@@ -34,8 +35,7 @@ public class MeterFactory {
 			return applicationContext.getBean(SunStarDS.class, meterId, cacheService.getMeterAddressMap(meterType), connection);
 			
 		case ENERTRAK: // Meter Type 2
-			log.warn("ENERTRAK Meter type not implemented yet.");
-			return null;
+			return applicationContext.getBean(Enertrak.class, meterId, cacheService.getMeterAddressMap(meterType), connection);
 			
 		case SUMERU_VERDE: // Meter Type 4
 		case SUMERU_VERDE_MSB: // Meter Type 8

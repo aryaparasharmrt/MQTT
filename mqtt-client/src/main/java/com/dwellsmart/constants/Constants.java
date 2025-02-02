@@ -5,7 +5,7 @@ import java.time.Duration;
 public final class Constants {
 	
 	//Modbus Configuration
-	public static final int MODBUS_MAX_RETRIES = 1; 
+	public static final int MODBUS_MAX_RETRIES = 3; 
 	
 	//Cache Configuration
 	public static final Duration MESSAGE_VALIDITY_DURATION = Duration.ofMinutes(10);

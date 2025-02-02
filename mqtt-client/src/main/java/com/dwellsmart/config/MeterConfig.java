@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
+import com.dwellsmart.modbus.meter.Enertrak;
 import com.dwellsmart.modbus.meter.LnT;
 import com.dwellsmart.modbus.meter.SumeruVerde;
 import com.dwellsmart.modbus.meter.SunStarDS;
@@ -32,6 +33,12 @@ public class MeterConfig {
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 	LnT lntSinglePhaseMeter(short slaveId, MeterAddressMap addressMap, RTUTCPMasterConnection connection) {
 		return new LnT(slaveId, addressMap, connection);
+	}
+	
+	@Bean
+	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+	Enertrak sunStarEnertrak(short slaveId, MeterAddressMap addressMap, RTUTCPMasterConnection connection) {
+		return new Enertrak(slaveId, addressMap, connection);
 	}
 
 }

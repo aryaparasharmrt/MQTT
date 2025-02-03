@@ -61,12 +61,11 @@ public class CacheService {
        
         Instant currentTimestamp = Instant.now();
 
-        if (messageIdCache.containsKey(messageId)) {
-            Instant lastTimestamp = messageIdCache.get(messageId);
-            if (Duration.between(lastTimestamp, currentTimestamp).compareTo(Constants.MESSAGE_VALIDITY_DURATION) < 0) {
-                return false; // Reject if within validity period
-            }
-        }
+		// Check if the messageId exists in the cache and is within the validity period
+		Instant lastTimestamp = messageIdCache.get(messageId);
+		if (lastTimestamp != null && Duration.between(lastTimestamp, currentTimestamp).compareTo(Constants.MESSAGE_VALIDITY_DURATION) < 0) {
+			return false; // Reject if within validity period
+		}
 
         // Update or add the message ID with the current timestamp
         messageIdCache.put(messageId, currentTimestamp);

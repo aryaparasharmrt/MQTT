@@ -53,13 +53,13 @@ public class ModbusService {
 						&& response.getUnitID() == request.getUnitID()) {
 					return response; // Successful response
 				} else {
-					log.warn("Invalid response received. Attempt: " + (attempts + 1));
+					log.debug("Invalid response received. Attempt: " + (attempts + 1));
 				}
 
 			} catch (ModbusException e) {
-				log.error("Error in readInputRegistersRequest attempt ModbusException: " + (attempts + 1), e);
+				log.error("Error in readInputRegistersRequest() attempt ModbusException: " + (attempts + 1), e);
 			} catch (Exception e) {
-				log.error("Error in readInputRegistersRequest attempt Exception: " + (attempts + 1), e);
+				log.error("Error in readInputRegistersRequest() attempt Exception: " + (attempts + 1), e);
 			}
 
 			attempts++;
@@ -72,7 +72,7 @@ public class ModbusService {
 			}
 		}
 
-		log.warn("Max retries reached for readInputRegistersRequest");
+		log.warn("Max retries reached for readInputRegistersRequest() | IP Address: "+ masterConnection.getAddress().getHostAddress()+":"+masterConnection.getPort() + " | Meter ID: " + slaveId);
 		return null;
 	}
 
@@ -100,13 +100,13 @@ public class ModbusService {
 						&& response.getUnitID() == request.getUnitID()) {
 					return response; // Successful response
 				} else {
-					log.warn("Invalid response received. Attempt: " + (attempts + 1));
+					log.debug("Invalid response received. Attempt: " + (attempts + 1));
 				}
 
 			} catch (ModbusException e) {
-				log.error("Error in readMultipleRegistersRequest attempt (ModbusException): " + (attempts + 1), e);
+				log.error("Error in readMultipleRegistersRequest() attempt (ModbusException): " + (attempts + 1), e);
 			} catch (Exception e) {
-				log.error("Error in readMultipleRegistersRequest attempt (Exception): " + (attempts + 1), e);
+				log.error("Error in readMultipleRegistersRequest() attempt (Exception): " + (attempts + 1), e);
 			}
 
 			attempts++;
@@ -119,8 +119,9 @@ public class ModbusService {
 			}
 		}
 
-		log.warn("Max retries reached for readMultipleRegistersRequest");
+		log.warn("Max retries reached for readMultipleRegistersRequest() | IP Address: "+ masterConnection.getAddress().getHostAddress()+":"+masterConnection.getPort() + " | Meter ID: " + slaveId);
 		return null;
+		
 	}
 
 	public boolean writeMultipleRegistersRequest(short slaveId, int registerRef,
@@ -147,12 +148,12 @@ public class ModbusService {
 						&& response.getUnitID() == request.getUnitID()) {
 					return true; // Successful response
 				} else {
-					log.warn("Invalid response received. Attempt: " + (attempts + 1));
+					log.debug("Invalid response received. Attempt: " + (attempts + 1));
 				}
 			} catch (ModbusException e) {
-				log.error("Error in writeMultipleRegistersRequest attempt (ModbusException): " + (attempts + 1), e);
+				log.error("Error in writeMultipleRegistersRequest() attempt (ModbusException): " + (attempts + 1), e);
 			} catch (Exception e) {
-				log.error("Error in writeMultipleRegistersRequest attempt (Exception): " + (attempts + 1), e);
+				log.error("Error in writeMultipleRegistersRequest() attempt (Exception): " + (attempts + 1), e);
 			}
 
 			attempts++;
@@ -165,7 +166,7 @@ public class ModbusService {
 			}
 		}
 
-		log.warn("Max retries reached for writeMultipleRegistersRequest");
+		log.warn("Max retries reached for writeMultipleRegistersRequest() | IP Address: "+ masterConnection.getAddress().getHostAddress()+":"+masterConnection.getPort() + " | Meter ID: " + slaveId);
 		return false;
 	}
 	
@@ -193,12 +194,12 @@ public class ModbusService {
 						&& response.getUnitID() == request.getUnitID()) {
 					return true; // Successful response
 				} else {
-					log.warn("Invalid response received. Attempt: " + (attempts + 1));
+					log.debug("Invalid response received. Attempt: " + (attempts + 1));
 				}
 			} catch (ModbusException e) {
-				log.error("Error in writeMultipleRegistersRequest attempt (ModbusException): " + (attempts + 1), e);
+				log.error("Error in writeSingleRegistersRequest() attempt (ModbusException): " + (attempts + 1), e);
 			} catch (Exception e) {
-				log.error("Error in writeMultipleRegistersRequest attempt (Exception): " + (attempts + 1), e);
+				log.error("Error in writeSingleRegistersRequest() attempt (Exception): " + (attempts + 1), e);
 			}
 
 			attempts++;
@@ -211,7 +212,7 @@ public class ModbusService {
 			}
 		}
 
-		log.warn("Max retries reached for writeMultipleRegistersRequest");
+		log.warn("Max retries reached for writeSingleRegistersRequest() | IP Address: "+ masterConnection.getAddress().getHostAddress()+":"+masterConnection.getPort() + " | Meter ID: " + slaveId);
 		return false;
 	}
 

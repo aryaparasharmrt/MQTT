@@ -56,7 +56,13 @@ public class PoolManager {
 			@Override
 			public void run() {
 				
-				log.debug("Processing payload: " + payload);
+				if (log.isDebugEnabled()) {
+					log.debug("Processing payload: {}", payload);
+				} else {
+					String formattedPayload = payload.replace("\n", "").replace("\r", "").replace(" ", "");;
+					log.info("Processing payload: {}", formattedPayload);
+				}
+
 				byte[] response = null;
 				try {
 					MeterOperationPayload operationPayload = payloadUtils.validateRequest(payload);
@@ -71,36 +77,36 @@ public class PoolManager {
 					// Main Functionality:
 					meterOperationService.processOperation(operationPayload);
 
-					log.trace("Returning payload: \n" + operationPayload);
 
+					log.trace("Returning payload: {}", operationPayload);
 					response = payloadUtils.convertToResponseAsBytes(operationPayload);
 					mqttService.publish(operationPayload.getMessageId(), response);
 
 				} catch (ApplicationException e) {
 					log.warn("Application Exception: " + e.getLocalizedMessage());
-					e.printStackTrace(); // TODO for logging errors
 					ResponseError responseError = ResponseError.builder().errorCode(e.getCode())
 							.errorMessage(e.getMessage()).build();
 
-					log.debug("Response Error: \n" + responseError);
+					log.debug("Response Error: {}", responseError);
 					response = payloadUtils.convertToResponseAsBytes(responseError);
 					mqttService.publish(response);
 				} catch (Exception e) {
-					e.printStackTrace();
+					log.warn("Exception: " + e.getLocalizedMessage());
+
 					ResponseError responseError = ResponseError.builder()
 							.errorCode(ErrorCode.GENERIC_EXCEPTION.getErrorCode())
 							.errorMessage(ErrorCode.GENERIC_EXCEPTION.getErrorMessage()).build();
-					log.debug("Response Error: \n" + responseError);
+					log.debug("Response Error: {}", responseError);
 					response = payloadUtils.convertToResponseAsBytes(responseError);
 					mqttService.publish(response);
 				}
 
-				log.info("Completed payload processing: " + payload);
 			}
 
 			@Override
 			public String toString() {
-				//Returning payload If task is rejected...
+				log.warn("Task Rejected : {}", payload);
+				// Returning payload If task is rejected...
 				return payload;
 			}
 		});

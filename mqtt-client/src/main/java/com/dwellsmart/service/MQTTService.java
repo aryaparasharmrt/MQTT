@@ -61,30 +61,29 @@ public class MQTTService {
 	}
 
 	private void subscribe() {
-		String defaultSubscribeTopic = properties.getSubscribeTopic();
-		connection.subscribe(defaultSubscribeTopic, QualityOfService.AT_LEAST_ONCE, message -> {
+		String subscribeTopic = properties.getSubscribeTopic();
+		connection.subscribe(subscribeTopic, QualityOfService.AT_LEAST_ONCE, message -> {
 			String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
-			// Process the payload
+			
 			manager.processPayload(payload, this);
 		});
-		log.info("Subscribed to default topic: " + defaultSubscribeTopic);
+		log.info("Subscribed to topic: " + subscribeTopic);
 	}
 
 	public void resubscribeToTopics() {
 		this.subscribe();
+		log.info("Resubscribing to topics after clean session reconnect.");
 	}
 
 	@PreDestroy
 	public void cleanup() {
-		// Disconnect
+		
 		CompletableFuture<Void> disconnected = connection.disconnect();
 		try {
 			disconnected.get();
 		} catch (InterruptedException | ExecutionException e) {
-			log.error("Disconnection interrupted");
-			e.printStackTrace();
+			log.error("Disconnection interrupted",e);
 		}
-
 		connection.close();
 	}
 

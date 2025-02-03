@@ -35,12 +35,12 @@ public class PayloadUtils {
 		try {
 			request = objectMapper.readValue(payload, MeterOperationPayload.class);
 		} catch (JsonProcessingException e) {
-			log.error("Error processing payload: " + payload);
+			log.error("Error processing payload: {}", payload);
 			String message = this.optimizeJsonErrorMessage(e.getOriginalMessage());
 			throw new ApplicationException(ErrorCode.INVALID_JSON, message);
 		}
 		
-		log.debug("Request passed successfully.."+request);
+		log.trace("Request passed successfully {}", request);
 
 		Set<ConstraintViolation<MeterOperationPayload>> violations = validator.validate(request);
 
@@ -52,7 +52,7 @@ public class PayloadUtils {
 				Path propertyPath = violation.getPropertyPath();
 				String message = violation.getMessage();
 
-				log.info(propertyPath.toString() +"\n"+ message);
+				log.warn(propertyPath.toString() +" : {}",  message);
 
 				errorMessages.append(violation.getPropertyPath()).append(": ").append(violation.getMessage());
 				break;
@@ -65,11 +65,12 @@ public class PayloadUtils {
 	}
 
 	public <T> byte[] convertToResponseAsBytes(T obj) {
-		
 
 		try {
-			String asString = objectMapper.writeValueAsString(obj);
-			log.trace("Response as string: \n" + asString);
+			if (log.isDebugEnabled()) {
+				String asString = objectMapper.writeValueAsString(obj);
+				log.debug("Response as string: {}", asString);
+			}
 			return objectMapper.writeValueAsBytes(obj);
 		} catch (JsonProcessingException e) {
 			throw new ApplicationException(ErrorCode.GENERIC_EXCEPTION);

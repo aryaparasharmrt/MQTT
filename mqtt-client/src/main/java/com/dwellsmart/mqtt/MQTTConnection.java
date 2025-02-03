@@ -20,22 +20,21 @@ public class MQTTConnection {
 			@Override
 			public void onConnectionInterrupted(int errorCode) {
 				if (errorCode != 0) {
-					log.warn("Connection interrupted: " + errorCode + ": " + CRT.awsErrorString(errorCode));
+					log.warn("Connection interrupted: " + errorCode + ": " + CRT.awsErrorString(errorCode)+" :: Clinet ID: "+properties.getClientId());
 				}
 			}
 
 			@Override
 			public void onConnectionResumed(boolean sessionPresent) {
-				log.info("Connection resumed: with " + (sessionPresent ? "existing session" : "clean session"));
+				log.info("Connection resumed: with " + (sessionPresent ? "existing session" : "clean session")+ " :: Clinet ID: "+properties.getClientId());
 				if (!sessionPresent) {
-					log.info("Resubscribing to topics after clean session reconnect...");
 					mqttService.resubscribeToTopics();
 				}
 			}
 
 			@Override
 			public void onConnectionClosed(OnConnectionClosedReturn data) {
-				log.warn("Sesison closed ");
+				log.warn("Sesison closed :: Clinet ID: "+properties.getClientId());
 			}
 
 			@Override
@@ -46,8 +45,7 @@ public class MQTTConnection {
 
 			@Override
 			public void onConnectionFailure(OnConnectionFailureReturn data) {
-				log.error("Session Failure : " + data.getErrorCode());
-
+				log.error("Session Failure : " + data.getErrorCode() + " :: Clinet ID: "+properties.getClientId());
 			}
 		};
 
@@ -57,9 +55,9 @@ public class MQTTConnection {
 				           .withClientId(properties.getClientId())
 				           .withEndpoint(properties.getEndpoint())
 				           .withPort(8883)
-				           .withKeepAliveSecs(600)
+				           .withKeepAliveSecs(120)
 				           .withCleanSession(true) 
-				           .withReconnectTimeoutSecs(1,300) 
+				           .withReconnectTimeoutSecs(1,600) 
 				           .withProtocolOperationTimeoutMs(60000);
 
 	    MqttClientConnection connection = builder.build();

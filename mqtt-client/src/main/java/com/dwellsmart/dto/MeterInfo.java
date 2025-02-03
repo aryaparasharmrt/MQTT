@@ -11,8 +11,6 @@ import lombok.Data;
 public class MeterInfo {
 
 	@NotNull
-	@Min(value = 0)
-	@Max(value = 255)
 	private Short meterId;
 
 	@NotNull

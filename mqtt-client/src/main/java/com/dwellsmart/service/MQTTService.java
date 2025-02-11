@@ -2,7 +2,6 @@ package com.dwellsmart.service;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import org.springframework.stereotype.Component;
 
@@ -74,17 +73,24 @@ public class MQTTService {
 		this.subscribe();
 		log.info("Resubscribing to topics after clean session reconnect.");
 	}
+	
+	public void unsubscribe() {
+		String subscribeTopic = properties.getSubscribeTopic();
+		this.unsubscribe(subscribeTopic);
+	}
+	
+	public void unsubscribe(String subscribeTopic) {
+		connection.unsubscribe(subscribeTopic);
+		log.info("Unsubscribed to topic: " + subscribeTopic);
+	}
 
 	@PreDestroy
 	public void cleanup() {
-		
-		CompletableFuture<Void> disconnected = connection.disconnect();
-		try {
-			disconnected.get();
-		} catch (InterruptedException | ExecutionException e) {
-			log.error("Disconnection interrupted",e);
-		}
+
+		this.unsubscribe();
+		connection.disconnect();
 		connection.close();
+
 	}
 
 }

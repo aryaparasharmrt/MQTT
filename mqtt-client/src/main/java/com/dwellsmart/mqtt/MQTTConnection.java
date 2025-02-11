@@ -15,6 +15,8 @@ import software.amazon.awssdk.iot.AwsIotMqttConnectionBuilder;
 public class MQTTConnection {
 
 	public static MqttClientConnection createMqttConnection(MQTTProperties properties, MQTTService mqttService) {
+		
+		log.debug("Create MQTT Connection method called...");
 
 		MqttClientConnectionEvents callbacks = new MqttClientConnectionEvents() {
 			@Override

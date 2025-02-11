@@ -1,0 +1,27 @@
+mqtt:
+  endpoint: a23bq50uzv6v7o-ats.iot.ap-south-1.amazonaws.com
+  cert:
+   path: D:\OneDrive\Team Shared\mqttcerts\TestLaptopNikhil.cert.pem
+  key:
+   path: D:\OneDrive\Team Shared\mqttcerts\TestLaptopNikhil.private.key
+  ca:
+   path: D:\OneDrive\Team Shared\mqttcerts\root-CA.crt
+  subscribe:
+   topic: sdk/modbus/request/local
+  publish:
+   topic: sdk/modbus/response/local
+  client:
+   id: 'remotestation_local_client'
+
+spring:
+ main:
+   banner-mode: CONSOLE
+
+logging:
+   level:
+     root: INFO
+     com:
+      dwellsmart: DEBUG
+   file:
+     path: logs
+

@@ -1,28 +1,19 @@
-# Conversion to YAML from Properties formar report
-# Warnings:
-# - The yaml file had comments which are lost in the refactoring!
 spring:
   application:
     name: mqtt-client
   main:
     banner-mode: console
   profiles:
-    active: 'local  # Default profile (can be overridden)'
+    active: '@spring.profiles.active@'
+
+# Default Logging Level
 logging:
   level:
     com:
-      dwellsmart: TRACE
-mqtt:
-  endpoint: a23bq50uzv6v7o-ats.iot.ap-south-1.amazonaws.com
-  subscribe:
-    topic: sdk/modbus/request/1
-  publish:
-    topic: sdk/modbus/response/2
-  client:
-    id: 'basestation1002 # Default client May be client id wil be dynamically generated'
-  cert:
-    path: ./mqttcerts/TestLaptopNikhil.cert.pem
-  key:
-    path: ./mqttcerts/TestLaptopNikhil.private.key
-  ca:
-    path: ./mqttcerts/root-CA.crt
+     dwellsmart: INFO
+    root: INFO
+  file:
+    path: logs
+#logging.config: classpath:logback-spring.xml
+
+

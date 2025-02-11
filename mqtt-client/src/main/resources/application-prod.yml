@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: mqtt-client
+  main:
+    banner-mode: log
+#  profiles:
+#    active: 'prod'
+
+
+mqtt:
+  endpoint: a23bq50uzv6v7o-ats.iot.ap-south-1.amazonaws.com
+  cert:
+    path: ./mqttcerts/TestLaptopNikhil.cert.pem
+  key:
+    path: ./mqttcerts/TestLaptopNikhil.private.key
+  ca:
+    path: ./mqttcerts/root-CA.crt
+
+  subscribe:
+   topic: sdk/modbus/request/prod
+  publish:
+   topic: sdk/modbus/response/prod
+  client:
+   id: 'remotestation_prod_client'
+
+logging:
+   level:
+     root: INFO
+     com:
+      dwellsmart: INFO
+   file:
+     path: logs
+#logging.config: classpath:logback-spring.xml

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<springProperty name="LOG_PATH" source="logging.file.path" defaultValue="logs" />
+	<springProperty name="APP_NAME" source="spring.application.name" defaultValue="mqtt-client" />
+	<springProperty name="ACTIVE_PROFILE" source="spring.profiles.active" defaultValue="local" />
+	<springProperty name="LOG_LEVEL" source="logging.level.root" defaultValue="INFO" />
+	<springProperty name="APP_LOG_LEVEL" source="logging.level.com.dwellsmart" defaultValue="INFO" />
+
+	<property name="LOG_PATTERN" value="%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} [%5level] --- [%15.15thread] [%-40.40logger{40}] : %msg%n" />
+	<property name="CONSOLE_LOG_PATTERN" value="%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %highlight([%5level]) --- [%15.15thread] %magenta([%-40.40logger{40}]) : %msg%n" />
+
+
+	<!-- Console Appender -->
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>${CONSOLE_LOG_PATTERN}</pattern>
+		</encoder>
+	</appender>
+
+	<!-- File Appender -->
+	<appender name="FILE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_PATH}/${APP_NAME}-${ACTIVE_PROFILE}.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>
+				${LOG_PATH}/${APP_NAME}-${ACTIVE_PROFILE}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+			<maxHistory>30</maxHistory>
+			<totalSizeCap>250MB</totalSizeCap>
+
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>10MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+		<encoder>
+			<pattern>${LOG_PATTERN}</pattern>
+		</encoder>
+	</appender>
+
+	<!-- Local Development Profile -->
+	<springProfile name="local">
+		<logger name="com.dwellsmart" level="${APP_LOG_LEVEL}" />
+		<root level="${LOG_LEVEL}">
+			<appender-ref ref="CONSOLE" />
+			<appender-ref ref="FILE" />
+		</root>
+	</springProfile>
+
+	<!-- Development Profile -->
+	<springProfile name="dev">
+		<logger name="com.dwellsmart" level="${APP_LOG_LEVEL}" />
+		<root level="${LOG_LEVEL}">
+			<appender-ref ref="FILE" />
+		</root>
+	</springProfile>
+
+	<!-- Production Profile -->
+	<springProfile name="prod">
+		<logger name="com.dwellsmart" level="${APP_LOG_LEVEL}" />
+		<root level="${LOG_LEVEL}">
+			<appender-ref ref="FILE" />
+		</root>
+	</springProfile>
+
+</configuration>
